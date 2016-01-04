@@ -1,3 +1,5 @@
+#include <cppconn/prepared_statement.h>
+#include <boost/algorithm/string/join.hpp>
 #include "onlineHandler.h"
 
 OnlineHandler::OnlineHandler(fastcgi::ComponentContext *context)
@@ -88,16 +90,21 @@ void OnlineHandler::QueueProcessingThread()
         boost::mutex::scoped_lock fdlock(fdMutex_);
         try
         {
-            sql::mysql::MySQL_Connection * mysql_conn = dynamic_cast<sql::mysql::MySQL_Connection*> (con.get());
+            std::string query = "INSERT INTO `online`(`user_id`) VALUES ";
+            for (int i=0; i < queueCopy.size();i++)
+            {
+                query.append("( ? ) ,");
+            }
+            query.erase(query.length() - 1);
+            query.append(" ON DUPLICATE KEY UPDATE `last_seen`=NOW()");
+            std::cout << "Query: " << query <<std::endl;
+            boost::scoped_ptr<sql::PreparedStatement> stmt(con->prepareStatement(query));
+            int index = 1;
             for (std::vector<std::string>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i)
             {
-                boost::scoped_ptr<sql::Statement> stmt(con->createStatement());
-
-                std::string escapedData = mysql_conn->escapeString(*i);
-
-                stmt->execute("INSERT INTO `online`(`user_id`) VALUES ( \"" + escapedData + "\" )  ON DUPLICATE KEY UPDATE `last_seen`=NOW();");
-
+                stmt->setString(index++, *i);
             }
+            stmt->execute();
         } catch (sql::SQLException ex)
         {
             std::cout << "sql::SQLException occured:" << ex.what() << ex.getSQLState() << std::endl;

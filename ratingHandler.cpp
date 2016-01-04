@@ -103,18 +103,26 @@ void RaitingHandler::QueueProcessingThread()
         boost::mutex::scoped_lock fdlock(fdMutex_);
         try
         {
+            std::string query = "INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES ";
+            for(int i=0; i< queueCopy.size(); i++)
+            {
+                query.append("(?, ?, ?, ?, ?, ?) ,");
+            }                
+            query.erase(query.length() - 1);
+            int index = 1;
+            boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement(query));
             for (std::vector<Rating>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i)
             {
                 Rating mark = *i;
-                boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement("INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES (?, ?, ?, ?, ?, ?)"));
-                statment->setString(1, mark.uid);
-                statment->setDouble(2, mark.speed);
-                statment->setDouble(3, mark.design);
-                statment->setDouble(4, mark.possibilities);
-                statment->setDouble(5, mark.usability);
-                statment->setString(6, mark.message);
-                statment->execute();
+                statment->setString(index++, mark.uid);
+                statment->setDouble(index++, mark.speed);
+                statment->setDouble(index++, mark.design);
+                statment->setDouble(index++, mark.possibilities);
+                statment->setDouble(index++, mark.usability);
+                statment->setString(index++, mark.message);
+                
             }
+            statment->execute();
         } catch (sql::SQLException ex)
         {
             std::cout << "sql::SQLException occured:" << ex.what() << std::endl;
