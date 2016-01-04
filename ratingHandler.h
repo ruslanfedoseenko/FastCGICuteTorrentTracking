@@ -21,25 +21,25 @@
 #include <iostream>
 #include <sstream>
 
-class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler
-{
-	struct Rating{
-		float design, speed, usability, possibilities;
-		std::string uid, message;
-	};
-	std::vector<Rating> queue_;
-	
-	boost::condition queueCondition_;
+class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
+
+    struct Rating {
+        float design, speed, usability, possibilities;
+        std::string uid, message;
+    };
+    std::vector<Rating> queue_;
+
+    boost::condition queueCondition_;
     boost::mutex queueMutex_;
-	boost::mutex fdMutex_;
-	std::string mysql_host, mysql_user, mysql_pass;
-	bool stopping_;
+    boost::mutex fdMutex_;
+    std::string mysql_host, mysql_user, mysql_pass;
+    bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
-    public:
-        RaitingHandler(fastcgi::ComponentContext *context);
-		virtual void onLoad();
-        virtual void onUnload();
-        virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
-		void QueueProcessingThread();
+public:
+    RaitingHandler(fastcgi::ComponentContext *context);
+    virtual void onLoad();
+    virtual void onUnload();
+    virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void QueueProcessingThread();
 };

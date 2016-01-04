@@ -19,28 +19,28 @@
 #include <iostream>
 #include <sstream>
 
-class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler
-{
-	struct Comment{
-		int parentCommentId, id;
-		std::string comment, infohash, userToken, comentTime;
-		float rating;
-		std::vector<int> childComments;
-	};
-	std::vector<Comment> queue_;
-	
-	boost::condition queueCondition_;
+class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
+
+    struct Comment {
+        int parentCommentId, id;
+        std::string comment, infohash, userToken, comentTime;
+        float rating;
+        std::vector<int> childComments;
+    };
+    std::vector<Comment> queue_;
+
+    boost::condition queueCondition_;
     boost::mutex queueMutex_;
-	boost::mutex fdMutex_;
-	std::string mysql_host, mysql_user, mysql_pass;
-	bool stopping_;
+    boost::mutex fdMutex_;
+    std::string mysql_host, mysql_user, mysql_pass;
+    bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
-	static void buildJson(boost::property_tree::ptree* pt, std::vector<Comment>& comments);
+    static void buildJson(boost::property_tree::ptree* pt, std::vector<Comment>& comments);
 public:
-        CommentsHandler(fastcgi::ComponentContext *context);
-		virtual void onLoad();
-        virtual void onUnload();
-        virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
-		void QueueProcessingThread();
+    CommentsHandler(fastcgi::ComponentContext *context);
+    virtual void onLoad();
+    virtual void onUnload();
+    virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void QueueProcessingThread();
 };
