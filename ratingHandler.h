@@ -20,13 +20,12 @@
 #include <boost/smart_ptr.hpp>
 #include <iostream>
 #include <sstream>
-
+#include <rapidjson/document.h>
+#include <rapidjson/pointer.h>
+#include "Rating.h"
 class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
-    struct Rating {
-        float design, speed, usability, possibilities;
-        std::string uid, message;
-    };
+    
     std::vector<Rating> queue_;
 
     boost::condition queueCondition_;
@@ -36,6 +35,7 @@ class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi
     bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
+    double GetJsonDoubleValue(const rapidjson::Value& value, const char* name);
 public:
     RaitingHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();

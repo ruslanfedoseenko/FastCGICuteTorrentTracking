@@ -36,6 +36,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/commentsHandler.o \
+	${OBJECTDIR}/dao/BaseRepository.o \
+	${OBJECTDIR}/dao/CommentsRepository.o \
+	${OBJECTDIR}/dao/RepositoryContext.o \
+	${OBJECTDIR}/dao/UserRepository.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/onlineHandler.o \
 	${OBJECTDIR}/ratingHandler.o
@@ -45,8 +49,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-fpermissive
+CXXFLAGS=-fpermissive
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -69,6 +73,26 @@ ${OBJECTDIR}/commentsHandler.o: commentsHandler.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
+
+${OBJECTDIR}/dao/BaseRepository.o: dao/BaseRepository.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/BaseRepository.o dao/BaseRepository.cpp
+
+${OBJECTDIR}/dao/CommentsRepository.o: dao/CommentsRepository.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/CommentsRepository.o dao/CommentsRepository.cpp
+
+${OBJECTDIR}/dao/RepositoryContext.o: dao/RepositoryContext.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RepositoryContext.o dao/RepositoryContext.cpp
+
+${OBJECTDIR}/dao/UserRepository.o: dao/UserRepository.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

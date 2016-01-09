@@ -1,5 +1,8 @@
 #include "ratingHandler.h"
 #include <cppconn/prepared_statement.h>
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <boost/lexical_cast.hpp>
 
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
@@ -26,56 +29,73 @@ void RaitingHandler::onUnload()
     writingThread_.join();
 }
 
+double RaitingHandler::GetJsonDoubleValue(const rapidjson::Value& jValue, const char* name)
+{
+    const rapidjson::Value& value = jValue[name];
+    if (value.IsDouble())
+    {
+	return value.GetDouble();
+    }
+    else if (value.IsString())
+    {
+	return boost::lexical_cast<double>(value.GetString());
+    }
+
+    return -1.0;
+}
+
 void RaitingHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
     if (request->getRequestMethod() == "POST")
     {
 
-        fastcgi::DataBuffer buffer = request->requestBody();
-        std::stringstream jsonData;
-        std::string bufferString;
-        buffer.toString(bufferString);
-        jsonData << bufferString;
-        boost::property_tree::ptree pt;
-        try
-        {
+	fastcgi::DataBuffer buffer = request->requestBody();
 
-            boost::property_tree::read_json(jsonData, pt);
+	std::string bufferString;
+	buffer.toString(bufferString);
 
-        } catch (std::exception ex)
-        {
-            std::cout << "Exception parsing occured " << ex.what() << std::endl;
-            request->setStatus(500);
-            return;
-        }
-        try
-        {
+	rapidjson::Document doc;
 
-            Rating rating;
-            rating.speed = pt.get<float>("rating.speed", -1.f);
-            rating.design = pt.get<float>("rating.design", -1.f);
-            rating.usability = pt.get<float>("rating.usability", -1.f);
-            rating.possibilities = pt.get<float>("rating.possibilities", -1.f);
-            rating.message = pt.get<std::string>("rating.custom_msg");
-            rating.uid = pt.get<std::string>("rating.uid");
-            
-            boost::mutex::scoped_lock lock(queueMutex_);
-            queue_.push_back(rating);
-            queueCondition_.notify_one();
-        } catch (std::exception ex)
-        {
-            std::cout << "Exception reading data occured " << ex.what() << std::endl;
-            request->setStatus(500);
-            return;
-        }
+	doc.Parse(bufferString.c_str());
+
+	if (doc.HasParseError())
+	{
+	    std::cout << "Exception parsing occured " << doc.GetParseError() << std::endl;
+	    request->setStatus(500);
+	    return;
+	}
 
 
-    } else
+
+	rapidjson::Value::ConstMemberIterator ratingJsonObjectIter = doc.FindMember("rating");
+	if (ratingJsonObjectIter != doc.MemberEnd())
+	{
+	    Rating rating;
+	    const rapidjson::Value& ratingJsonObject = ratingJsonObjectIter->value;
+	    rating.speed = GetJsonDoubleValue(ratingJsonObject, "speed");
+	    rating.design = GetJsonDoubleValue(ratingJsonObject, "design");
+	    rating.usability = GetJsonDoubleValue(ratingJsonObject, "usability");
+	    rating.possibilities = GetJsonDoubleValue(ratingJsonObject, "possibilities");
+	    rating.message = ratingJsonObject["custom_msg"].GetString();
+	    rating.uid = ratingJsonObject["uid"].GetString();
+	    boost::mutex::scoped_lock lock(queueMutex_);
+	    queue_.push_back(rating);
+	    queueCondition_.notify_one();
+	}
+	else
+	{
+	    std::cout << "Required rating json object is missing." << std::endl;
+	    request->setStatus(400);
+	    return;
+	}
+
+    }
+    else
     {
-        std::stringbuf buffer("{\"state\" : \"error\", \"errorString\" : \"Required parameter is missing.\"}");
-        request->setStatus(400);
-        request->write(&buffer);
+	std::stringbuf buffer("{\"state\" : \"error\", \"errorString\" : \"Required parameter is missing.\"}");
+	request->setStatus(400);
+	request->write(&buffer);
     }
 
 }
@@ -88,45 +108,48 @@ void RaitingHandler::QueueProcessingThread()
     con->setSchema("tracking_db");
     while (!stopping_)
     {
-        std::vector<Rating> queueCopy;
-        if (queueCopy.empty())
-        {
-            std::cout << "Before lock QueueProcessingThread" << std::endl;
-            boost::mutex::scoped_lock lock(queueMutex_);
-            std::cout << "Waiting for new items..." << std::endl;
-            queueCondition_.wait(lock);
-            std::swap(queueCopy, queue_);
-            std::cout << "After lock QueueProcessingThread" << std::endl;
-        }
+	std::vector<Rating> queueCopy;
+	if (queueCopy.empty())
+	{
+	    std::cout << "Before lock QueueProcessingThread" << std::endl;
+	    boost::mutex::scoped_lock lock(queueMutex_);
+	    std::cout << "Waiting for new items..." << std::endl;
+	    queueCondition_.wait(lock);
+	    std::swap(queueCopy, queue_);
+	    if (queueCopy.empty())
+		continue;
+	    std::cout << "After lock QueueProcessingThread" << std::endl;
+	}
 
 
-        boost::mutex::scoped_lock fdlock(fdMutex_);
-        try
-        {
-            std::string query = "INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES ";
-            for(int i=0; i< queueCopy.size(); i++)
-            {
-                query.append("(?, ?, ?, ?, ?, ?) ,");
-            }                
-            query.erase(query.length() - 1);
-            int index = 1;
-            boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement(query));
-            for (std::vector<Rating>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i)
-            {
-                Rating mark = *i;
-                statment->setString(index++, mark.uid);
-                statment->setDouble(index++, mark.speed);
-                statment->setDouble(index++, mark.design);
-                statment->setDouble(index++, mark.possibilities);
-                statment->setDouble(index++, mark.usability);
-                statment->setString(index++, mark.message);
-                
-            }
-            statment->execute();
-        } catch (sql::SQLException ex)
-        {
-            std::cout << "sql::SQLException occured:" << ex.what() << std::endl;
-        }
+	boost::mutex::scoped_lock fdlock(fdMutex_);
+	try
+	{
+	    std::string query = "INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES ";
+	    for (int i = 0; i < queueCopy.size(); i++)
+	    {
+		query.append("(?, ?, ?, ?, ?, ?) ,");
+	    }
+	    query.erase(query.length() - 1);
+	    int index = 1;
+	    boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement(query));
+	    for (std::vector<Rating>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i)
+	    {
+		Rating mark = *i;
+		statment->setString(index++, mark.uid);
+		statment->setDouble(index++, mark.speed);
+		statment->setDouble(index++, mark.design);
+		statment->setDouble(index++, mark.possibilities);
+		statment->setDouble(index++, mark.usability);
+		statment->setString(index++, mark.message);
+
+	    }
+	    statment->execute();
+	}
+	catch (sql::SQLException ex)
+	{
+	    std::cout << "sql::SQLException occured:" << ex.what() << std::endl;
+	}
     }
     driver->threadEnd();
 }

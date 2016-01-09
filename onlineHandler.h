@@ -17,7 +17,7 @@
 #include <boost/smart_ptr.hpp>
 #include <iostream>
 #include <sstream>
-
+#include "dao/UserRepository.h"
 class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler 
 {
     std::vector<std::string> queue_;
@@ -28,6 +28,7 @@ class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi:
     bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
+    boost::scoped_ptr<UserRepository> m_pUserRepository;
 public:
     OnlineHandler(fastcgi::ComponentContext *context);
 
