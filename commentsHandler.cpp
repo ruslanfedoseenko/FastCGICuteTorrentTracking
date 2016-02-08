@@ -267,6 +267,7 @@ void CommentsHandler::QueueProcessingThread()
 	try
 	{
 	    m_pCommentsRepository->AddComments(queueCopy);
+	    queueCopy.clear();
 	}
 	catch (sql::SQLException ex)
 	{

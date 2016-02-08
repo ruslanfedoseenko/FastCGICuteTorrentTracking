@@ -13,7 +13,7 @@
 
 #ifndef COMMENTSREPOSITORY_H
 #define COMMENTSREPOSITORY_H
-#include "../Comments.h"
+#include "Comments.h"
 #include <vector>
 #include <iostream>
 #include <stlcache/stlcache.hpp>

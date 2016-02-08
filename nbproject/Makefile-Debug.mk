@@ -38,19 +38,24 @@ OBJECTFILES= \
 	${OBJECTDIR}/commentsHandler.o \
 	${OBJECTDIR}/dao/BaseRepository.o \
 	${OBJECTDIR}/dao/CommentsRepository.o \
+	${OBJECTDIR}/dao/JsonUtils.o \
+	${OBJECTDIR}/dao/RaitingRepository.o \
 	${OBJECTDIR}/dao/RepositoryContext.o \
 	${OBJECTDIR}/dao/UserRepository.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/onlineHandler.o \
-	${OBJECTDIR}/ratingHandler.o
+	${OBJECTDIR}/ratingHandler.o \
+	${OBJECTDIR}/registerHandler.o \
+	${OBJECTDIR}/userHandler.o \
+	${OBJECTDIR}/utils/TimeUtils.o
 
 
 # C Compiler Flags
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-fpermissive
+CXXFLAGS=-fpermissive
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -59,55 +64,80 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibTrackingFastCGI.${CND_DLIB_EXT}
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibTrackingFastCGI.${CND_DLIB_EXT}: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibTrackingFastCGI.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
 
 ${OBJECTDIR}/commentsHandler.o: commentsHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
 
 ${OBJECTDIR}/dao/BaseRepository.o: dao/BaseRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/BaseRepository.o dao/BaseRepository.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/BaseRepository.o dao/BaseRepository.cpp
 
 ${OBJECTDIR}/dao/CommentsRepository.o: dao/CommentsRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/CommentsRepository.o dao/CommentsRepository.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/CommentsRepository.o dao/CommentsRepository.cpp
+
+${OBJECTDIR}/dao/JsonUtils.o: dao/JsonUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/JsonUtils.o dao/JsonUtils.cpp
+
+${OBJECTDIR}/dao/RaitingRepository.o: dao/RaitingRepository.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RaitingRepository.o dao/RaitingRepository.cpp
 
 ${OBJECTDIR}/dao/RepositoryContext.o: dao/RepositoryContext.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RepositoryContext.o dao/RepositoryContext.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RepositoryContext.o dao/RepositoryContext.cpp
 
 ${OBJECTDIR}/dao/UserRepository.o: dao/UserRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 ${OBJECTDIR}/onlineHandler.o: onlineHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/onlineHandler.o onlineHandler.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/onlineHandler.o onlineHandler.cpp
 
 ${OBJECTDIR}/ratingHandler.o: ratingHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ratingHandler.o ratingHandler.cpp
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ratingHandler.o ratingHandler.cpp
+
+${OBJECTDIR}/registerHandler.o: registerHandler.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/registerHandler.o registerHandler.cpp
+
+${OBJECTDIR}/userHandler.o: userHandler.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/userHandler.o userHandler.cpp
+
+${OBJECTDIR}/utils/TimeUtils.o: utils/TimeUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/TimeUtils.o utils/TimeUtils.cpp
 
 # Subprojects
 .build-subprojects:
@@ -115,7 +145,7 @@ ${OBJECTDIR}/ratingHandler.o: ratingHandler.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibTrackingFastCGI.${CND_DLIB_EXT}
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}
 
 # Subprojects
 .clean-subprojects:

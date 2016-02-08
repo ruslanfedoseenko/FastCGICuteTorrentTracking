@@ -23,6 +23,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include "Rating.h"
+#include "RaitingRepository.h"
 class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
     
@@ -35,7 +36,7 @@ class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi
     bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
-    double GetJsonDoubleValue(const rapidjson::Value& value, const char* name);
+    boost::scoped_ptr<RaitingRepository> m_pRatingRepo;
 public:
     RaitingHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();

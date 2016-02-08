@@ -7,14 +7,23 @@
         <itemPath>dao/BaseRepository.h</itemPath>
         <itemPath>dao/CommentsRepository.cpp</itemPath>
         <itemPath>dao/CommentsRepository.h</itemPath>
+        <itemPath>dao/RaitingRepository.cpp</itemPath>
+        <itemPath>dao/RaitingRepository.h</itemPath>
         <itemPath>dao/RepositoryContext.cpp</itemPath>
         <itemPath>dao/RepositoryContext.h</itemPath>
         <itemPath>dao/UserRepository.cpp</itemPath>
         <itemPath>dao/UserRepository.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="models" projectFiles="true">
-        <itemPath>Comments.h</itemPath>
-        <itemPath>Rating.h</itemPath>
+        <itemPath>models/Comments.h</itemPath>
+        <itemPath>models/Rating.h</itemPath>
+        <itemPath>dao/UserRequest.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2" displayName="utils" projectFiles="true">
+        <itemPath>dao/JsonUtils.cpp</itemPath>
+        <itemPath>dao/JsonUtils.h</itemPath>
+        <itemPath>utils/TimeUtils.cpp</itemPath>
+        <itemPath>utils/TimeUtils.h</itemPath>
       </logicalFolder>
       <itemPath>commentsHandler.cpp</itemPath>
       <itemPath>commentsHandler.h</itemPath>
@@ -23,6 +32,10 @@
       <itemPath>onlineHandler.h</itemPath>
       <itemPath>ratingHandler.cpp</itemPath>
       <itemPath>ratingHandler.h</itemPath>
+      <itemPath>registerHandler.cpp</itemPath>
+      <itemPath>registerHandler.h</itemPath>
+      <itemPath>userHandler.cpp</itemPath>
+      <itemPath>userHandler.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Файлы ресурсов"
@@ -51,12 +64,20 @@
       <compileType>
         <ccTool>
           <standard>8</standard>
+          <incDir>
+            <pElem>dao</pElem>
+            <pElem>models</pElem>
+            <pElem>utils</pElem>
+          </incDir>
+          <commandLine>-fpermissive</commandLine>
         </ccTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}</output>
+          <linkerLibItems>
+            <linkerOptionItem>-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
-      <item path="Comments.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Rating.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="commentsHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="commentsHandler.h" ex="false" tool="3" flavor2="0">
@@ -69,6 +90,14 @@
       </item>
       <item path="dao/CommentsRepository.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/JsonUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/JsonUtils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="dao/RaitingRepository.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/RaitingRepository.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="dao/RepositoryContext.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="dao/RepositoryContext.h" ex="false" tool="3" flavor2="0">
@@ -77,7 +106,13 @@
       </item>
       <item path="dao/UserRepository.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/UserRequest.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="models/Comments.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/Rating.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="onlineHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -87,10 +122,22 @@
       </item>
       <item path="ratingHandler.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="registerHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="registerHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="userHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="userHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/TimeUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/TimeUtils.h" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
     <conf name="Release" type="2">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -101,6 +148,12 @@
         <ccTool>
           <developmentMode>5</developmentMode>
           <standard>8</standard>
+          <commandlineTool>g++</commandlineTool>
+          <incDir>
+            <pElem>dao</pElem>
+            <pElem>models</pElem>
+            <pElem>utils</pElem>
+          </incDir>
           <commandLine>-fpermissive</commandLine>
         </ccTool>
         <fortranCompilerTool>
@@ -137,10 +190,6 @@
           <packInfoListElem name="Description" value="..." mandatory="false"/>
         </packInfoList>
       </packaging>
-      <item path="Comments.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Rating.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="commentsHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="commentsHandler.h" ex="false" tool="3" flavor2="0">
@@ -153,6 +202,14 @@
       </item>
       <item path="dao/CommentsRepository.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/JsonUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/JsonUtils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="dao/RaitingRepository.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/RaitingRepository.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="dao/RepositoryContext.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="dao/RepositoryContext.h" ex="false" tool="3" flavor2="0">
@@ -161,7 +218,13 @@
       </item>
       <item path="dao/UserRepository.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/UserRequest.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="models/Comments.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/Rating.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="onlineHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -170,6 +233,18 @@
       <item path="ratingHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ratingHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="registerHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="registerHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="userHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="userHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/TimeUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/TimeUtils.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

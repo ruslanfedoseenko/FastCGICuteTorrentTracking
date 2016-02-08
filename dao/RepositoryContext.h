@@ -20,6 +20,7 @@ class RepositoryContext {
 public:
     RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
     boost::shared_ptr<sql::Connection> GetConnection();
+    void rollback();
     virtual ~RepositoryContext();
 private:
     std::string m_dbHost, m_dbUser, m_dbPassword;

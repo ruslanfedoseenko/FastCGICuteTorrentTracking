@@ -86,6 +86,7 @@ void OnlineHandler::QueueProcessingThread()
 	try
 	{
 	   m_pUserRepository->SetUsersOnline(queueCopy);
+	   queueCopy.clear();
 	}
 	catch (sql::SQLException ex)
 	{

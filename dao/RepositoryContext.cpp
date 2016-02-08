@@ -33,9 +33,17 @@ boost::shared_ptr<sql::Connection> RepositoryContext::GetConnection()
     }
     return m_dbConnection;
 }
+void RepositoryContext::rollback()
+{
+    if (m_dbConnection != nullptr)
+    {
+	m_dbConnection->rollback();
+    }
+}
 
 RepositoryContext::~RepositoryContext()
 {
+    m_dbConnection->commit();
     sql::Driver* driver = get_driver_instance();
     driver->threadEnd();
     m_dbConnection->close();
