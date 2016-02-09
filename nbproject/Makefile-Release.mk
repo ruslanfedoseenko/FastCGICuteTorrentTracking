@@ -47,7 +47,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/ratingHandler.o \
 	${OBJECTDIR}/registerHandler.o \
 	${OBJECTDIR}/userHandler.o \
-	${OBJECTDIR}/utils/TimeUtils.o
+	${OBJECTDIR}/utils/Subrouter.o \
+	${OBJECTDIR}/utils/TimeUtils.o \
+	${OBJECTDIR}/utils/fastcgi2/RequestFilters.o
 
 
 # C Compiler Flags
@@ -77,67 +79,77 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}: $
 ${OBJECTDIR}/commentsHandler.o: commentsHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
 
 ${OBJECTDIR}/dao/BaseRepository.o: dao/BaseRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/BaseRepository.o dao/BaseRepository.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/BaseRepository.o dao/BaseRepository.cpp
 
 ${OBJECTDIR}/dao/CommentsRepository.o: dao/CommentsRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/CommentsRepository.o dao/CommentsRepository.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/CommentsRepository.o dao/CommentsRepository.cpp
 
 ${OBJECTDIR}/dao/JsonUtils.o: dao/JsonUtils.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/JsonUtils.o dao/JsonUtils.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/JsonUtils.o dao/JsonUtils.cpp
 
 ${OBJECTDIR}/dao/RaitingRepository.o: dao/RaitingRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RaitingRepository.o dao/RaitingRepository.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RaitingRepository.o dao/RaitingRepository.cpp
 
 ${OBJECTDIR}/dao/RepositoryContext.o: dao/RepositoryContext.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RepositoryContext.o dao/RepositoryContext.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/RepositoryContext.o dao/RepositoryContext.cpp
 
 ${OBJECTDIR}/dao/UserRepository.o: dao/UserRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 ${OBJECTDIR}/onlineHandler.o: onlineHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/onlineHandler.o onlineHandler.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/onlineHandler.o onlineHandler.cpp
 
 ${OBJECTDIR}/ratingHandler.o: ratingHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ratingHandler.o ratingHandler.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ratingHandler.o ratingHandler.cpp
 
 ${OBJECTDIR}/registerHandler.o: registerHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/registerHandler.o registerHandler.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/registerHandler.o registerHandler.cpp
 
 ${OBJECTDIR}/userHandler.o: userHandler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/userHandler.o userHandler.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/userHandler.o userHandler.cpp
+
+${OBJECTDIR}/utils/Subrouter.o: utils/Subrouter.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/Subrouter.o utils/Subrouter.cpp
 
 ${OBJECTDIR}/utils/TimeUtils.o: utils/TimeUtils.cpp 
 	${MKDIR} -p ${OBJECTDIR}/utils
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/TimeUtils.o utils/TimeUtils.cpp
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/TimeUtils.o utils/TimeUtils.cpp
+
+${OBJECTDIR}/utils/fastcgi2/RequestFilters.o: utils/fastcgi2/RequestFilters.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/fastcgi2
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/fastcgi2/RequestFilters.o utils/fastcgi2/RequestFilters.cpp
 
 # Subprojects
 .build-subprojects:

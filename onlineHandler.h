@@ -18,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include "dao/UserRepository.h"
+#include "utils/Subrouter.h"
 class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler 
 {
     std::vector<std::string> queue_;
@@ -29,13 +30,14 @@ class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi:
     // Writing thread.
     boost::thread writingThread_;
     boost::scoped_ptr<UserRepository> m_pUserRepository;
+    boost::scoped_ptr<Subrouter> m_router;
 public:
     OnlineHandler(fastcgi::ComponentContext *context);
 
     virtual void onLoad();
 
     virtual void onUnload();
-
+    void handleOnlineUpdate(fastcgi::Request *request);
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
 
     void QueueProcessingThread();

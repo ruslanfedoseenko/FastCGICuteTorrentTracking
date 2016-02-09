@@ -1,10 +1,14 @@
 #include <cppconn/prepared_statement.h>
 #include <boost/algorithm/string/join.hpp>
 #include "onlineHandler.h"
-
+#include <boost/bind.hpp>
 OnlineHandler::OnlineHandler(fastcgi::ComponentContext *context)
-    : fastcgi::Component(context)
+: fastcgi::Component(context)
+, m_router(new Subrouter)
 {
+    HandlerDescriptor* onlineHandler = m_router->RegisterHandler(boost::bind(&OnlineHandler::handleOnlineUpdate, this, _1));
+    onlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/tracking/online")));
+    onlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new ParamFilter("uid", "[a-fA-F0-9]{32}")));
     std::cout << "OnlineHandler::ctor" << std::endl;
 }
 
@@ -26,71 +30,52 @@ void OnlineHandler::onUnload()
     writingThread_.join();
 }
 
+void OnlineHandler::handleOnlineUpdate(fastcgi::Request *request)
+{
+    std::string uid = request->getArg("uid");
+
+    std::cout << "Before lock handleRequest" << std::endl;
+    boost::mutex::scoped_lock lock(queueMutex_);
+    std::cout << "After lock handleRequest" << std::endl;
+    queue_.push_back(uid);
+    std::cout << "Added to quieue" << uid << ". Quieue size" << queue_.size() << std::endl;
+    ;
+    queueCondition_.notify_one();
+    std::stringbuf buffer("{\"state\" : \"ok\"}");
+    request->write(&buffer);
+
+}
+
 void OnlineHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
-    if (request->hasArg("uid"))
-    {
-	std::string uid = request->getArg("uid");
-	int len = uid.length();
-
-	std::cout << "OnlineHandler recived uid param: " << uid << ", Length: " << len << std::endl;
-	if (len != 32)
-	{
-	    std::stringbuf buffer("{\"state\" : \"error\", \"errorString\" : \"UID parameter is invalid.\"}");
-	    request->setStatus(400);
-	    request->write(&buffer);
-	}
-	else
-	{
-	    std::cout << "Before lock handleRequest" << std::endl;
-	    boost::mutex::scoped_lock lock(queueMutex_);
-	    std::cout << "After lock handleRequest" << std::endl;
-	    queue_.push_back(uid);
-	    std::cout << "Added to quieue" << uid << ". Quieue size" << queue_.size() << std::endl;
-	    ;
-	    queueCondition_.notify_one();
-	    std::stringbuf buffer("{\"state\" : \"ok\"}");
-	    request->write(&buffer);
-	}
-
-    }
-    else
-    {
-	std::stringbuf buffer("{\"state\" : \"error\", \"errorString\" : \"Required parameter is missing.\"}");
-	request->setStatus(400);
-	request->write(&buffer);
-    }
+    m_router->HandleRequest(request);
 
 }
 
 void OnlineHandler::QueueProcessingThread()
 {
-    while (!stopping_)
-    {
-	std::vector<std::string> queueCopy;
-	if (queueCopy.empty())
-	{
-	    std::cout << "Before lock QueueProcessingThread" << std::endl;
-	    boost::mutex::scoped_lock lock(queueMutex_);
-	    std::cout << "Waiting for new items..." << std::endl;
-	    queueCondition_.wait(lock);
-	    std::swap(queueCopy, queue_);
-	    if (queueCopy.empty())
-		continue;
-	    std::cout << "After lock QueueProcessingThread" << std::endl;
-	}
+    while (!stopping_) {
+        std::vector<std::string> queueCopy;
+        if (queueCopy.empty()) {
+            std::cout << "Before lock QueueProcessingThread" << std::endl;
+            boost::mutex::scoped_lock lock(queueMutex_);
+            std::cout << "Waiting for new items..." << std::endl;
+            queueCondition_.wait(lock);
+            std::swap(queueCopy, queue_);
+            if (queueCopy.empty())
+                continue;
+            std::cout << "After lock QueueProcessingThread" << std::endl;
+        }
 
 
-	boost::mutex::scoped_lock fdlock(fdMutex_);
-	try
-	{
-	   m_pUserRepository->SetUsersOnline(queueCopy);
-	   queueCopy.clear();
-	}
-	catch (sql::SQLException ex)
-	{
-	    std::cout << "sql::SQLException occured:" << ex.what() << ex.getSQLState() << std::endl;
-	}
+        boost::mutex::scoped_lock fdlock(fdMutex_);
+        try {
+            m_pUserRepository->SetUsersOnline(queueCopy);
+            queueCopy.clear();
+        }
+        catch (sql::SQLException ex) {
+            std::cout << "sql::SQLException occured:" << ex.what() << ex.getSQLState() << std::endl;
+        }
     }
 }
