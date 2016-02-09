@@ -24,6 +24,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include "UserRequest.h"
+#include "utils/Subrouter.h"
 #include <vector>
 
 class UserHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
@@ -32,9 +33,14 @@ public:
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void GetOnlineCount(fastcgi::Request* request);
+    void GetUserName(fastcgi::Request* request);
+    void UpdateUserSession(fastcgi::Request* request);
+    void UpdateUserName(fastcgi::Request* request);
 private:
     std::vector<UserRequest> m_requestQueue;
     boost::scoped_ptr<UserRepository> m_pUserRepository;
+    boost::scoped_ptr<Subrouter> m_router;
     bool m_isStoping;
     boost::mutex m_queueAccessMutex, m_conditionMutex;
     boost::thread m_queueProcessingThread;

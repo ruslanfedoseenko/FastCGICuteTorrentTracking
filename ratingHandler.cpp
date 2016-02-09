@@ -41,7 +41,10 @@ void RaitingHandler::AddRating(fastcgi::Request* request)
     buffer.toString(json);
     rapidjson::ParseResult ok = doc.Parse(json.c_str());
     if (!ok)
-	printf( "JSON parse error: %s (%lu)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+    {
+        printf( "JSON parse error: %s (%lu)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+        return;
+    }
     
     if (doc.HasMember("rating")) {
         Rating rating;
