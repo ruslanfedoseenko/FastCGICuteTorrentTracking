@@ -16,7 +16,7 @@
 #include <boost/algorithm/string.hpp>
 
 
-HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Request*)> handler)
+HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Request*,fastcgi::HandlerContext*)> handler)
 {
     HandlerDescriptor* descriptor = new HandlerDescriptor;
     descriptor->Handler = handler;
@@ -24,7 +24,7 @@ HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Requ
     return descriptor;
 }
 
-bool Subrouter::HandleRequest(fastcgi::Request* request)
+bool Subrouter::HandleRequest(fastcgi::Request* request,  fastcgi::HandlerContext *handlerContext)
 {
     for(std::vector<HandlerDescriptor*>::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i )
     {
@@ -35,6 +35,7 @@ bool Subrouter::HandleRequest(fastcgi::Request* request)
         {
             boost::shared_ptr<RequestFilter> filter = *j;
             match = match && filter->check(request);
+            filter->fillVars(handlerContext);
             if (!match)
             {
                 break;
@@ -42,7 +43,7 @@ bool Subrouter::HandleRequest(fastcgi::Request* request)
         }
         if (match)
         {
-            decriptor->Handler(request);
+            decriptor->Handler(request, handlerContext);
             return true;
         }
     }

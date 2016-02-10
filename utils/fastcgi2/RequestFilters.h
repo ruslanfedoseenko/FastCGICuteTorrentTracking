@@ -15,20 +15,26 @@
 #define REQUESTFILTERS_H
 
 #include <boost/regex.hpp>
-
+#include <unordered_map>
 namespace fastcgi{
     class Request;
+    class HandlerContext;
 }
 
 
 class RequestFilter {
 public:
-    virtual bool check(const fastcgi::Request *request) const = 0;
+    virtual bool check(const fastcgi::Request *request) = 0;
+    virtual void fillVars(fastcgi::HandlerContext* context) = 0;
 };
 class RequestTypeFilter : public RequestFilter{
 public:
     RequestTypeFilter(const std::string &type);
-    bool check(const fastcgi::Request *request) const;
+    bool check(const fastcgi::Request *request);
+     void fillVars(fastcgi::HandlerContext* context)
+     {
+     
+     }
 private:
     std::string m_type;
 };
@@ -37,9 +43,10 @@ class RegexFilter  {
 public:
     RegexFilter(const std::string &regex);
     ~RegexFilter();
-
-    bool check(const std::string &value) const;
+    void FillExtractedVariables(fastcgi::HandlerContext* handlerContext );
+    bool check(const std::string &value);
 private:
+    std::unordered_map<std::string,std::string> vraibles;
     boost::regex regex_;
 };
 
@@ -48,7 +55,11 @@ public:
     UrlFilter(const std::string &regex);
     ~UrlFilter();
 
-    virtual bool check(const fastcgi::Request *request) const;
+    virtual bool check(const fastcgi::Request *request);
+     void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
 private:
     RegexFilter regex_;
 };
@@ -57,8 +68,11 @@ class HostFilter : public RequestFilter {
 public:
     HostFilter(const std::string &regex);
     ~HostFilter();
-
-    virtual bool check(const fastcgi::Request *request) const;
+ void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
+    virtual bool check(const fastcgi::Request *request);
 private:
     RegexFilter regex_;
 };
@@ -67,8 +81,11 @@ class PortFilter : public RequestFilter {
 public:
     PortFilter(const std::string &regex);
     ~PortFilter();
-
-    virtual bool check(const fastcgi::Request *request) const;
+ void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
+    virtual bool check(const fastcgi::Request *request);
 private:
     RegexFilter regex_;
 };
@@ -77,8 +94,11 @@ class AddressFilter : public RequestFilter {
 public:
     AddressFilter(const std::string &regex);
     ~AddressFilter();
-
-    virtual bool check(const fastcgi::Request *request) const;
+ void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
+    virtual bool check(const fastcgi::Request *request);
 private:
     RegexFilter regex_;
 };
@@ -87,8 +107,11 @@ class RefererFilter : public RequestFilter {
 public:
     RefererFilter(const std::string &regex);
     ~RefererFilter();
-
-    virtual bool check(const fastcgi::Request *request) const;
+ void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
+    virtual bool check(const fastcgi::Request *request);
 private:
     RegexFilter regex_;
 };
@@ -97,8 +120,11 @@ class ParamFilter : public RequestFilter {
 public:
     ParamFilter(const std::string &name, const std::string &regex);
     ~ParamFilter();
-
-    virtual bool check(const fastcgi::Request *request) const;
+     void fillVars(fastcgi::HandlerContext* context)
+     {
+         regex_.FillExtractedVariables(context);
+     }
+    virtual bool check(const fastcgi::Request *request);
 private:
     std::string name_;
     RegexFilter regex_;

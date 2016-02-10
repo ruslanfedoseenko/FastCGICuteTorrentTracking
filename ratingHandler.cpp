@@ -5,11 +5,12 @@
 #include <boost/lexical_cast.hpp>
 #include "JsonUtils.h"
 #include <rapidjson/error/en.h>
+
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
 {
-    HandlerDescriptor* addHandlerDescriptor = m_router->RegisterHandler(boost::bind(&RaitingHandler::AddRating, this, _1));
+    HandlerDescriptor* addHandlerDescriptor = m_router->RegisterHandler(boost::bind(&RaitingHandler::AddRating, this, _1, _2));
     addHandlerDescriptor->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("POST")));
     addHandlerDescriptor->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/rating")));
     std::cout << "RaitingHandler::ctor" << std::endl;
@@ -33,14 +34,13 @@ void RaitingHandler::onUnload()
     writingThread_.join();
 }
 
-void RaitingHandler::AddRating(fastcgi::Request* request)
+void RaitingHandler::AddRating(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    
-    if (!JsonUtils::ParseJson(doc, buffer))
-    {
-	std::stringbuf buffer("JSON parse error:");
+
+    if (!JsonUtils::ParseJson(doc, buffer)) {
+        std::stringbuf buffer("JSON parse error:");
         buffer.sputc(' ');
         const char* error = rapidjson::GetParseError_En(doc.GetParseError());
         buffer.sputn(error, strlen(error));
@@ -48,7 +48,7 @@ void RaitingHandler::AddRating(fastcgi::Request* request)
         request->write(&buffer);
         return;
     }
-    
+
     if (doc.HasMember("rating")) {
         Rating rating;
         const rapidjson::Value& ratingJsonObject = doc["rating"];
@@ -72,7 +72,7 @@ void RaitingHandler::AddRating(fastcgi::Request* request)
 void RaitingHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
-    m_router->HandleRequest(request);
+    m_router->HandleRequest(request, handlerContext);
 }
 
 void RaitingHandler::QueueProcessingThread()

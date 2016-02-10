@@ -50,7 +50,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/userHandler.o \
 	${OBJECTDIR}/utils/Subrouter.o \
 	${OBJECTDIR}/utils/TimeUtils.o \
-	${OBJECTDIR}/utils/fastcgi2/RequestFilters.o
+	${OBJECTDIR}/utils/fastcgi2/RequestFilters.o \
+	${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o
 
 
 # C Compiler Flags
@@ -156,6 +157,11 @@ ${OBJECTDIR}/utils/fastcgi2/RequestFilters.o: utils/fastcgi2/RequestFilters.cpp
 	${MKDIR} -p ${OBJECTDIR}/utils/fastcgi2
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/fastcgi2/RequestFilters.o utils/fastcgi2/RequestFilters.cpp
+
+${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o: utils/fastcgi2/VariableExtractor.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/fastcgi2
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o utils/fastcgi2/VariableExtractor.cpp
 
 # Subprojects
 .build-subprojects:

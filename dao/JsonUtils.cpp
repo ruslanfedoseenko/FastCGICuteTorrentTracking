@@ -21,9 +21,9 @@ bool JsonUtils::ParseJson(rapidjson::Document& doc,fastcgi::DataBuffer& buffer)
     
 
     rapidjson::ParseResult ok = doc.Parse(json.c_str());
-    if (!ok)
+    if (ok.IsError())
 	printf( "JSON parse error: %s (%lu)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
-    return ok;
+    return !ok.IsError();
 }
 
 

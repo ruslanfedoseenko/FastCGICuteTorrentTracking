@@ -28,6 +28,7 @@ class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi:
     std::string mysql_host, mysql_user, mysql_pass;
     bool stopping_;
     // Writing thread.
+    fastcgi::Logger* m_logger;
     boost::thread writingThread_;
     boost::scoped_ptr<UserRepository> m_pUserRepository;
     boost::scoped_ptr<Subrouter> m_router;
@@ -37,7 +38,7 @@ public:
     virtual void onLoad();
 
     virtual void onUnload();
-    void handleOnlineUpdate(fastcgi::Request *request);
+    void handleOnlineUpdate(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
 
     void QueueProcessingThread();

@@ -35,22 +35,21 @@ using namespace boost::filesystem;
 
 UserHandler::UserHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
-, m_queueProcessingThread(boost::bind(&UserHandler::QueueProcessingRoutine, this))
 , m_router(new Subrouter)
 {
-    HandlerDescriptor* getOnlineHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetOnlineCount, this, _1));
+    HandlerDescriptor* getOnlineHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetOnlineCount, this, _1, _2));
     getOnlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/")));
     getOnlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("get")));
-    HandlerDescriptor* getUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetUserName, this, _1));
-    getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/[a-fA-F0-9]{32}/")));
+    HandlerDescriptor* getUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetUserName, this, _1, _2));
+    getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{32})/")));
     getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("get")));
-    HandlerDescriptor* updateUserSessionHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserSession, this, _1));
-    updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/[a-fA-F0-9]{32}/")));
+    HandlerDescriptor* updateUserSessionHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserSession, this, _1, _2));
+    updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/(?<user_id>[a-fA-F0-9]{32})/")));
     updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
-    HandlerDescriptor* updateUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserName, this, _1));
-    updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/[a-fA-F0-9]{32}/")));
+    HandlerDescriptor* updateUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserName, this, _1, _2));
+    updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{32})/")));
     updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
-
+     std::cout << "RaitingHandler::UserHandler" << std::endl;
 }
 
 void UserHandler::onLoad()
@@ -59,7 +58,7 @@ void UserHandler::onLoad()
     std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
     std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
     m_pUserRepository.reset(new UserRepository(mysql_host, mysql_user, mysql_pass));
-
+    m_queueProcessingThread= boost::thread(boost::bind(&UserHandler::QueueProcessingRoutine, this));
 }
 
 void UserHandler::onUnload()
@@ -69,7 +68,7 @@ void UserHandler::onUnload()
     m_queueProcessingThread.join();
 }
 
-void UserHandler::GetOnlineCount(fastcgi::Request* request)
+void UserHandler::GetOnlineCount(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
 {
     rapidjson::Document responseDock;
     responseDock.SetObject();
@@ -81,49 +80,44 @@ void UserHandler::GetOnlineCount(fastcgi::Request* request)
     request->write(outputBuffer.GetString(), outputBuffer.GetSize());
 }
 
-void UserHandler::GetUserName(fastcgi::Request* request)
+void UserHandler::GetUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
 {
     rapidjson::Document responseDock;
-    std::string pathStr = request->getScriptName();
-    path p(pathStr);
-    path::iterator pathBegin(p.begin()), pathEnd(p.end());
-    path::iterator userIt = std::find(pathBegin, pathEnd, "user");
-    userIt++;
-    std::string userID = (*userIt).string();
-    responseDock.SetObject();
-    rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
-    responseDock.AddMember("name", rapidjson::Value(m_pUserRepository->GetUserName(userID).c_str(), allocator), allocator);
-    rapidjson::StringBuffer outputBuffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);
-    responseDock.Accept(writer);
-    request->write(outputBuffer.GetString(), outputBuffer.GetSize());
+    boost::any param = handlerContext->getParam("user_id");
+    if (!param.empty()) {
+        std::string userID = boost::any_cast<std::string>(param);
+        responseDock.SetObject();
+        rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
+        responseDock.AddMember("name", rapidjson::Value(m_pUserRepository->GetUserName(userID).c_str(), allocator), allocator);
+        rapidjson::StringBuffer outputBuffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);
+        responseDock.Accept(writer);
+        request->write(outputBuffer.GetString(), outputBuffer.GetSize());
+    }
 }
 
-void UserHandler::UpdateUserSession(fastcgi::Request* request)
+void UserHandler::UpdateUserSession(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
 {
     UserRequest userRequest;
-    std::string pathStr = request->getScriptName();
-    path p(pathStr);
-    path::iterator pathBegin(p.begin()), pathEnd(p.end());
-    path::iterator userIt = std::find(pathBegin, pathEnd, "online");
-    userIt++;
-    std::string userID = (*userIt).string();
-    time_t updateTime;
-    time(&updateTime);
-    userRequest.type = UserRequest::HeartBeat;
-    userRequest.userToken = userID;
-    userRequest.value = updateTime;
-    boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
-    m_requestQueue.push_back(userRequest);
-    m_queueCondition.notify_one();
+    boost::any param = handlerContext->getParam("user_id");
+    if (!param.empty()) {
+        std::string userID = boost::any_cast<std::string>(param);
+        time_t updateTime;
+        time(&updateTime);
+        userRequest.type = UserRequest::HeartBeat;
+        userRequest.userToken = userID;
+        userRequest.value = updateTime;
+        boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
+        m_requestQueue.push_back(userRequest);
+        m_queueCondition.notify_one();
+    }
 }
 
-void UserHandler::UpdateUserName(fastcgi::Request* request)
+void UserHandler::UpdateUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    if (!JsonUtils::ParseJson(doc, buffer))
-    {
+    if (!JsonUtils::ParseJson(doc, buffer)) {
         std::stringbuf buffer("JSON parse error:");
         buffer.sputc(' ');
         const char* error = rapidjson::GetParseError_En(doc.GetParseError());
@@ -133,33 +127,32 @@ void UserHandler::UpdateUserName(fastcgi::Request* request)
         return;
     }
     UserRequest userRequest;
-    std::string pathStr = request->getScriptName();
-    path p(pathStr);
-    path::iterator pathBegin(p.begin()), pathEnd(p.end());
-    path::iterator userIt = std::find(pathBegin, pathEnd, "user");
-    userIt++;
-    std::string userID = (*userIt).string();
-    if (doc.HasMember("user")) {
-        rapidjson::Value& userObject = doc["user"];
-        userRequest.userToken = userID;
-        userRequest.value = JsonUtils::GetValue<std::string>(userObject, "name");
-        userRequest.type = UserRequest::UserNameUpdate;
-        boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
-        m_requestQueue.push_back(userRequest);
-        m_queueCondition.notify_one();
+    boost::any param = handlerContext->getParam("user_id");
+    if (!param.empty()) {
+        std::string userID = boost::any_cast<std::string>(param);
+        if (doc.IsObject() && doc.HasMember("user")) {
+            rapidjson::Value& userObject = doc["user"];
+            userRequest.userToken = userID;
+            userRequest.value = JsonUtils::GetValue<std::string>(userObject, "name");
+            userRequest.type = UserRequest::UserNameUpdate;
+            boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
+            m_requestQueue.push_back(userRequest);
+            m_queueCondition.notify_one();
+        }
+        else {
+            std::stringbuf buffer("{ state: \"error\", errorMessage: \"Missing root user object\"}");
+            request->setStatus(400);
+            request->write(&buffer);
+            return;
+        }
     }
-    else {
-        std::stringbuf buffer("{ state: \"error\", errorMessage: \"Missing root user object\"}");
-        request->setStatus(400);
-        request->write(&buffer);
-        return;
-    }
+
 }
 
 void UserHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
-    m_router->HandleRequest(request);
+    m_router->HandleRequest(request, handlerContext);
 }
 
 void UserHandler::QueueProcessingRoutine()

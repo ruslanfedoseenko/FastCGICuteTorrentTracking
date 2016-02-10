@@ -20,13 +20,14 @@
 #include <fastcgi2/logger.h>
 #include <fastcgi2/config.h>
 #include "utils/Subrouter.h"
-class RegisterHandler : public fastcgi::Component, virtual public fastcgi::Handler {
+class RegisterHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 public:
     RegisterHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext) override;
 private:
+    fastcgi::Logger* m_logger;
     boost::scoped_ptr<Subrouter> m_router;
 
 };

@@ -27,16 +27,16 @@
 #include "utils/Subrouter.h"
 #include <vector>
 
-class UserHandler : public fastcgi::Component, virtual public fastcgi::Handler {
+class UserHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 public:
     UserHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
-    void GetOnlineCount(fastcgi::Request* request);
-    void GetUserName(fastcgi::Request* request);
-    void UpdateUserSession(fastcgi::Request* request);
-    void UpdateUserName(fastcgi::Request* request);
+    void GetOnlineCount(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
+    void GetUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
+    void UpdateUserSession(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
+    void UpdateUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
 private:
     std::vector<UserRequest> m_requestQueue;
     boost::scoped_ptr<UserRepository> m_pUserRepository;

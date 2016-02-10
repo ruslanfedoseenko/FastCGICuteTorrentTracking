@@ -44,6 +44,6 @@ public:
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
-    void AddRating(fastcgi::Request* request);
+    void AddRating(fastcgi::Request* request,fastcgi::HandlerContext *handlerContext);
     void QueueProcessingThread();
 };

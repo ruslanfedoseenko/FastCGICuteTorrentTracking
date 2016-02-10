@@ -25,8 +25,8 @@ namespace fastcgi{
 class Subrouter {
 public:
     ~Subrouter();
-    HandlerDescriptor* RegisterHandler(boost::function<void(fastcgi::Request*)> handler);
-    bool HandleRequest(fastcgi::Request*);
+    HandlerDescriptor* RegisterHandler(boost::function<void(fastcgi::Request*,fastcgi::HandlerContext *)> handler);
+    bool HandleRequest(fastcgi::Request*, fastcgi::HandlerContext*);
    
 private:
    
