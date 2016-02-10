@@ -12,16 +12,16 @@ CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Linux
 CND_ARTIFACT_NAME_Debug=libTrackingFastCGI.so
 CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Linux/libTrackingFastCGI.so
 CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux/package
-CND_PACKAGE_NAME_Debug=libFastCGICuteTorrentTracking.so.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/libFastCGICuteTorrentTracking.so.tar
+CND_PACKAGE_NAME_Debug=liblibTrackingFastCGI.so.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/liblibTrackingFastCGI.so.tar
 # Release configuration
 CND_PLATFORM_Release=GNU-Linux
 CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux
 CND_ARTIFACT_NAME_Release=libTrackingFastCGI.so
 CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux/libTrackingFastCGI.so
 CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux/package
-CND_PACKAGE_NAME_Release=libFastCGICuteTorrentTracking.so.deb
-CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/libFastCGICuteTorrentTracking.so.deb
+CND_PACKAGE_NAME_Release=liblibTrackingFastCGI.so.deb
+CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/liblibTrackingFastCGI.so.deb
 #
 # include compiler specific variables
 #

@@ -21,7 +21,7 @@
 
 class JsonUtils {
 public:
-    static rapidjson::Document ParseJson(fastcgi::DataBuffer& buffer);
+    static bool ParseJson(rapidjson::Document& document, fastcgi::DataBuffer& buffer);
     template <class T> static T GetValue(const rapidjson::Value& document, const char* path);
 private:
 

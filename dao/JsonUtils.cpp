@@ -13,17 +13,17 @@
 
 #include "JsonUtils.h"
 #include <rapidjson/error/en.h>
-#include <exception>
-rapidjson::Document JsonUtils::ParseJson(fastcgi::DataBuffer& buffer)
+bool JsonUtils::ParseJson(rapidjson::Document& doc,fastcgi::DataBuffer& buffer)
 {
     std::string json;
     buffer.toString(json);
 
-    rapidjson::Document doc;
+    
 
     rapidjson::ParseResult ok = doc.Parse(json.c_str());
     if (!ok)
 	printf( "JSON parse error: %s (%lu)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+    return ok;
 }
 
 

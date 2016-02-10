@@ -27,7 +27,7 @@
 #include "utils/Subrouter.h"
 #include <vector>
 
-class UserHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
+class UserHandler : public fastcgi::Component, virtual public fastcgi::Handler {
 public:
     UserHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();

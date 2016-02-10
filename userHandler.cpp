@@ -122,14 +122,11 @@ void UserHandler::UpdateUserName(fastcgi::Request* request)
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    std::string json;
-    buffer.toString(json);
-    rapidjson::ParseResult ok = doc.Parse(json.c_str());
-    if (!ok)
+    if (!JsonUtils::ParseJson(doc, buffer))
     {
         std::stringbuf buffer("JSON parse error:");
         buffer.sputc(' ');
-        const char* error = rapidjson::GetParseError_En(ok.Code());
+        const char* error = rapidjson::GetParseError_En(doc.GetParseError());
         buffer.sputn(error, strlen(error));
         request->setStatus(400);
         request->write(&buffer);

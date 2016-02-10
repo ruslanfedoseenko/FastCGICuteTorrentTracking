@@ -15,6 +15,7 @@
 
 RegisterHandler::RegisterHandler(fastcgi::ComponentContext *context)
     : fastcgi::Component(context)
+    , m_router(new Subrouter)
 {
 
 }
@@ -31,7 +32,8 @@ void RegisterHandler::onUnload()
 
 void RegisterHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
-
+    request->setContentType("application/json");
+    m_router->HandleRequest(request);
 }
 
 

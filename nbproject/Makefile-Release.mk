@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/dao/BaseRepository.o \
 	${OBJECTDIR}/dao/CommentsRepository.o \
 	${OBJECTDIR}/dao/JsonUtils.o \
+	${OBJECTDIR}/dao/NewUsersRepository.o \
 	${OBJECTDIR}/dao/RaitingRepository.o \
 	${OBJECTDIR}/dao/RepositoryContext.o \
 	${OBJECTDIR}/dao/UserRepository.o \
@@ -95,6 +96,11 @@ ${OBJECTDIR}/dao/JsonUtils.o: dao/JsonUtils.cpp
 	${MKDIR} -p ${OBJECTDIR}/dao
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/JsonUtils.o dao/JsonUtils.cpp
+
+${OBJECTDIR}/dao/NewUsersRepository.o: dao/NewUsersRepository.cpp 
+	${MKDIR} -p ${OBJECTDIR}/dao
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/NewUsersRepository.o dao/NewUsersRepository.cpp
 
 ${OBJECTDIR}/dao/RaitingRepository.o: dao/RaitingRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao

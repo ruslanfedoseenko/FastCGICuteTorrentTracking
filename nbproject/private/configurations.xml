@@ -13,8 +13,12 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
+            <option name="debug_command"
+                    value="fastcgi-daemon2 --config=/etc/fastcgi2/available/libtrackingfcgi.conf"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
@@ -46,9 +50,12 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
-            <option name="debug_command" value="service fastcgi-daemon2 restart"/>
+            <option name="debug_command"
+                    value="fastcgi-daemon2 --config=/etc/fastcgi2/available/libtrackingfcgi.conf"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>

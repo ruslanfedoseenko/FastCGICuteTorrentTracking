@@ -112,7 +112,7 @@ void UserRepository::SetUserNames(const std::unordered_map<std::string, std::str
 	context = createContext();
     }
     boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-    std::string query = "INSERT INTO `online`(`user_id`, `userName`) VALUES ";
+    std::string query = "INSERT INTO `users`(`user_id`, `userName`) VALUES ";
     for (int i = 0 ; i < userNames.size(); i++)
     {
 	query.append("(?, ?) ,");

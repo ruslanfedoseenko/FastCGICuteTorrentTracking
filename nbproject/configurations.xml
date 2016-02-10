@@ -7,6 +7,8 @@
         <itemPath>dao/BaseRepository.h</itemPath>
         <itemPath>dao/CommentsRepository.cpp</itemPath>
         <itemPath>dao/CommentsRepository.h</itemPath>
+        <itemPath>dao/NewUsersRepository.cpp</itemPath>
+        <itemPath>dao/NewUsersRepository.h</itemPath>
         <itemPath>dao/RaitingRepository.cpp</itemPath>
         <itemPath>dao/RaitingRepository.h</itemPath>
         <itemPath>dao/RepositoryContext.cpp</itemPath>
@@ -14,9 +16,22 @@
         <itemPath>dao/UserRepository.cpp</itemPath>
         <itemPath>dao/UserRepository.h</itemPath>
       </logicalFolder>
+      <logicalFolder name="f3" displayName="handlers" projectFiles="true">
+        <itemPath>commentsHandler.cpp</itemPath>
+        <itemPath>commentsHandler.h</itemPath>
+        <itemPath>onlineHandler.cpp</itemPath>
+        <itemPath>onlineHandler.h</itemPath>
+        <itemPath>ratingHandler.cpp</itemPath>
+        <itemPath>ratingHandler.h</itemPath>
+        <itemPath>registerHandler.cpp</itemPath>
+        <itemPath>registerHandler.h</itemPath>
+        <itemPath>userHandler.cpp</itemPath>
+        <itemPath>userHandler.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="models" projectFiles="true">
         <itemPath>models/Comments.h</itemPath>
         <itemPath>models/Rating.h</itemPath>
+        <itemPath>models/User.h</itemPath>
         <itemPath>dao/UserRequest.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="utils" projectFiles="true">
@@ -32,21 +47,7 @@
         <itemPath>utils/TimeUtils.cpp</itemPath>
         <itemPath>utils/TimeUtils.h</itemPath>
       </logicalFolder>
-      <itemPath>commentsHandler.cpp</itemPath>
-      <itemPath>commentsHandler.h</itemPath>
       <itemPath>main.cpp</itemPath>
-      <itemPath>onlineHandler.cpp</itemPath>
-      <itemPath>onlineHandler.h</itemPath>
-      <itemPath>ratingHandler.cpp</itemPath>
-      <itemPath>ratingHandler.h</itemPath>
-      <itemPath>registerHandler.cpp</itemPath>
-      <itemPath>registerHandler.h</itemPath>
-      <itemPath>userHandler.cpp</itemPath>
-      <itemPath>userHandler.h</itemPath>
-    </logicalFolder>
-    <logicalFolder name="ResourceFiles"
-                   displayName="Файлы ресурсов"
-                   projectFiles="true">
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Файлы тестов"
@@ -102,6 +103,10 @@
       </item>
       <item path="dao/JsonUtils.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/NewUsersRepository.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/NewUsersRepository.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="dao/RaitingRepository.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="dao/RaitingRepository.h" ex="false" tool="3" flavor2="0">
@@ -121,6 +126,8 @@
       <item path="models/Comments.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="models/Rating.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/User.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="onlineHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -225,6 +232,10 @@
       </item>
       <item path="dao/JsonUtils.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="dao/NewUsersRepository.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dao/NewUsersRepository.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="dao/RaitingRepository.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="dao/RaitingRepository.h" ex="false" tool="3" flavor2="0">
@@ -244,6 +255,8 @@
       <item path="models/Comments.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="models/Rating.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/User.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="onlineHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
