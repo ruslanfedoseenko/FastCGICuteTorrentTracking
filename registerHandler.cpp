@@ -25,10 +25,10 @@ void RegisterHandler::onLoad()
 {
     const std::string loggerComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/logger");
     m_logger = context()->findComponent<fastcgi::Logger>(loggerComponentName);
-    if (!m_logger) {
-        throw std::runtime_error("cannot get component " + loggerComponentName);
+    if (!m_logger)
+    {
+	throw std::runtime_error("cannot get component " + loggerComponentName);
     }
-    m_logger->info("test log");
 }
 
 void RegisterHandler::onUnload()
@@ -39,9 +39,13 @@ void RegisterHandler::onUnload()
 void RegisterHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
-    m_router->HandleRequest(request,handlerContext);
+    m_router->HandleRequest(request, handlerContext);
 }
 
+void RegisterHandler::handleRegisterRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
+{
+    
+}
 
 
 

@@ -26,6 +26,15 @@ bool JsonUtils::ParseJson(rapidjson::Document& doc,fastcgi::DataBuffer& buffer)
     return !ok.IsError();
 }
 
+bool JsonUtils::CreateError(rapidjson::Document& document, int err,const std::string& message)
+{
+    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+    document.SetObject();
+    document.AddMember("code", err, allocator);
+    document.AddMember("message", rapidjson::Value(message.c_str(), allocator), allocator);
+}
+
+
 
 template <>
 int JsonUtils::GetValue<int>(const rapidjson::Value& value, const char* path)

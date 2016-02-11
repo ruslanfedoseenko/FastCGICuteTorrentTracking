@@ -27,8 +27,11 @@
 #include "utils/TimeUtils.h"
 #include "JsonUtils.h"
 #include <rapidjson/error/en.h>
-
-
+#include <boost/format.hpp>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+#include "Errors.h"
+#include "FcgiHelper.h"
 typedef std::unordered_map<std::string, std::string> stringmap;
 
 using namespace boost::filesystem;
@@ -117,14 +120,10 @@ void UserHandler::UpdateUserName(fastcgi::Request* request, fastcgi::HandlerCont
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    if (!JsonUtils::ParseJson(doc, buffer)) {
-        std::stringbuf buffer("JSON parse error:");
-        buffer.sputc(' ');
-        const char* error = rapidjson::GetParseError_En(doc.GetParseError());
-        buffer.sputn(error, strlen(error));
-        request->setStatus(400);
-        request->write(&buffer);
-        return;
+    if (!JsonUtils::ParseJson(doc, buffer))
+    {
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+	return;
     }
     UserRequest userRequest;
     boost::any param = handlerContext->getParam("user_id");

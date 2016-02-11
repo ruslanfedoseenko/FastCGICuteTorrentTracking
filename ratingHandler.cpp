@@ -4,8 +4,11 @@
 #include <rapidjson/document.h>
 #include <boost/lexical_cast.hpp>
 #include "JsonUtils.h"
+#include "Errors.h"
 #include <rapidjson/error/en.h>
-
+#include <boost/format.hpp>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
@@ -39,33 +42,39 @@ void RaitingHandler::AddRating(fastcgi::Request* request, fastcgi::HandlerContex
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
 
-    if (!JsonUtils::ParseJson(doc, buffer)) {
-        std::stringbuf buffer("JSON parse error:");
-        buffer.sputc(' ');
-        const char* error = rapidjson::GetParseError_En(doc.GetParseError());
-        buffer.sputn(error, strlen(error));
-        request->setStatus(400);
-        request->write(&buffer);
-        return;
+    if (!JsonUtils::ParseJson(doc, buffer))
+    {
+	rapidjson::Document errDoc;
+	std::string message = boost::str(boost::format("JSON parse error: %1% %2%") % doc.GetParseError() % rapidjson::GetParseError_En(doc.GetParseError()));
+	JsonUtils::CreateError(errDoc, InvalidJsonError, message);
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	errDoc.Accept(writer);
+	request->setStatus(400);
+	request->setHeader("Content-Type", "application/json");
+	request->write(buffer.GetString(), buffer.GetSize());
+	return;
     }
 
-    if (doc.HasMember("rating")) {
-        Rating rating;
-        const rapidjson::Value& ratingJsonObject = doc["rating"];
-        rating.speed = JsonUtils::GetValue<double>(ratingJsonObject, "speed");
-        rating.design = JsonUtils::GetValue<double>(ratingJsonObject, "design");
-        rating.usability = JsonUtils::GetValue<double>(ratingJsonObject, "usability");
-        rating.possibilities = JsonUtils::GetValue<double>(ratingJsonObject, "possibilities");
-        rating.message = JsonUtils::GetValue<std::string>(ratingJsonObject, "custom_msg");
-        rating.uid = JsonUtils::GetValue<std::string>(ratingJsonObject, "uid");
-        boost::mutex::scoped_lock lock(queueMutex_);
-        queue_.push_back(rating);
-        queueCondition_.notify_one();
+    if (doc.HasMember("rating"))
+    {
+	Rating rating;
+	const rapidjson::Value& ratingJsonObject = doc["rating"];
+	rating.speed = JsonUtils::GetValue<double>(ratingJsonObject, "speed");
+	rating.design = JsonUtils::GetValue<double>(ratingJsonObject, "design");
+	rating.usability = JsonUtils::GetValue<double>(ratingJsonObject, "usability");
+	rating.possibilities = JsonUtils::GetValue<double>(ratingJsonObject, "possibilities");
+	rating.message = JsonUtils::GetValue<std::string>(ratingJsonObject, "custom_msg");
+	rating.uid = JsonUtils::GetValue<std::string>(ratingJsonObject, "uid");
+	boost::mutex::scoped_lock lock(queueMutex_);
+	queue_.push_back(rating);
+	queueCondition_.notify_one();
     }
-    else {
-        std::cout << "Required rating json object is missing." << std::endl;
-        request->setStatus(400);
-        return;
+    else
+    {
+	std::cout << "Required rating json object is missing." << std::endl;
+	request->setStatus(400);
+	return;
     }
 }
 
@@ -77,22 +86,24 @@ void RaitingHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerCo
 
 void RaitingHandler::QueueProcessingThread()
 {
-    while (!stopping_) {
-        std::vector<Rating> queueCopy;
-        if (queueCopy.empty()) {
-            std::cout << "Before lock QueueProcessingThread" << std::endl;
-            boost::mutex::scoped_lock lock(queueMutex_);
-            std::cout << "Waiting for new items..." << std::endl;
-            queueCondition_.wait(lock);
-            std::swap(queueCopy, queue_);
-            if (queueCopy.empty())
-                continue;
-            std::cout << "After lock QueueProcessingThread" << std::endl;
-        }
+    while (!stopping_)
+    {
+	std::vector<Rating> queueCopy;
+	if (queueCopy.empty())
+	{
+	    std::cout << "Before lock QueueProcessingThread" << std::endl;
+	    boost::mutex::scoped_lock lock(queueMutex_);
+	    std::cout << "Waiting for new items..." << std::endl;
+	    queueCondition_.wait(lock);
+	    std::swap(queueCopy, queue_);
+	    if (queueCopy.empty())
+		continue;
+	    std::cout << "After lock QueueProcessingThread" << std::endl;
+	}
 
 
-        boost::mutex::scoped_lock fdlock(fdMutex_);
-        m_pRatingRepo->AddRatings(queueCopy);
+	boost::mutex::scoped_lock fdlock(fdMutex_);
+	m_pRatingRepo->AddRatings(queueCopy);
 
     }
 }

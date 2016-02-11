@@ -1,2 +1,2 @@
 # FastCGICuteTorrentTracking
-A FastCGI Server to track online user count and other info
+A FastCGI Handler For CuteTorrent comments API

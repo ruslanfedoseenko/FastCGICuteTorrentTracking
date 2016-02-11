@@ -26,6 +26,7 @@ public:
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext) override;
+    void handleRegisterRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
 private:
     fastcgi::Logger* m_logger;
     boost::scoped_ptr<Subrouter> m_router;

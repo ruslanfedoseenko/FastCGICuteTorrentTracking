@@ -48,6 +48,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/ratingHandler.o \
 	${OBJECTDIR}/registerHandler.o \
 	${OBJECTDIR}/userHandler.o \
+	${OBJECTDIR}/utils/FcgiHelper.o \
 	${OBJECTDIR}/utils/Subrouter.o \
 	${OBJECTDIR}/utils/TimeUtils.o \
 	${OBJECTDIR}/utils/fastcgi2/RequestFilters.o \
@@ -142,6 +143,11 @@ ${OBJECTDIR}/userHandler.o: userHandler.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/userHandler.o userHandler.cpp
+
+${OBJECTDIR}/utils/FcgiHelper.o: utils/FcgiHelper.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/FcgiHelper.o utils/FcgiHelper.cpp
 
 ${OBJECTDIR}/utils/Subrouter.o: utils/Subrouter.cpp 
 	${MKDIR} -p ${OBJECTDIR}/utils
