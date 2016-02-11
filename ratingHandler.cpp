@@ -9,6 +9,7 @@
 #include <boost/format.hpp>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include "FcgiHelper.h"
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
@@ -44,16 +45,8 @@ void RaitingHandler::AddRating(fastcgi::Request* request, fastcgi::HandlerContex
 
     if (!JsonUtils::ParseJson(doc, buffer))
     {
-	rapidjson::Document errDoc;
-	std::string message = boost::str(boost::format("JSON parse error: %1% %2%") % doc.GetParseError() % rapidjson::GetParseError_En(doc.GetParseError()));
-	JsonUtils::CreateError(errDoc, InvalidJsonError, message);
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	errDoc.Accept(writer);
-	request->setStatus(400);
-	request->setHeader("Content-Type", "application/json");
-	request->write(buffer.GetString(), buffer.GetSize());
-	return;
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+        return;
     }
 
     if (doc.HasMember("rating"))

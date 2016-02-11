@@ -23,7 +23,8 @@ public:
     User GetUser(const std::string& userId, boost::shared_ptr<RepositoryContext> context = nullptr);
     // Return non empty auth token on success
     std::string Authentificate(const std::string& login, const std::string& password, boost::shared_ptr<RepositoryContext> context = nullptr);
-    bool CheckAlive(const std::string& userId, const std::string& authToken, boost::shared_ptr<RepositoryContext> context = nullptr);
+    bool CheckAlive(const std::string authToken, boost::shared_ptr<RepositoryContext> context = nullptr);
+    
 private:
     std::string GenerateAuthToken();
     int AddAuthToken(std::string token, boost::shared_ptr<RepositoryContext> context = nullptr);

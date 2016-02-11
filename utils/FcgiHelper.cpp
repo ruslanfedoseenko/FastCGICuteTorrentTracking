@@ -20,10 +20,12 @@
 #include "Errors.h"
 #include <fastcgi2/request.h>
 #include <boost/format.hpp>
-void FcgiHelper::WriteParseError(fastcgi::Request* request, rapidjson::ParseErrorCode err){
+
+void FcgiHelper::WriteParseError(fastcgi::Request* request, rapidjson::ParseErrorCode err)
+{
     rapidjson::Document errDoc;
     std::string message = boost::str(boost::format("JSON parse error: %1%") % rapidjson::GetParseError_En(err));
-    JsonUtils::CreateError(errDoc, InvalidJsonError, message);
+    JsonUtils::CreateError(errDoc, InvalidJson, message);
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     errDoc.Accept(writer);
@@ -31,4 +33,25 @@ void FcgiHelper::WriteParseError(fastcgi::Request* request, rapidjson::ParseErro
     request->setHeader("Content-Type", "application/json");
     request->write(buffer.GetString(), buffer.GetSize());
 }
+
+void FcgiHelper::WriteError(fastcgi::Request* request, int error_code, std::string message)
+{
+    rapidjson::Document errDoc;
+    JsonUtils::CreateError(errDoc, error_code, message);
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    errDoc.Accept(writer);
+    request->setStatus(400);
+    request->setHeader("Content-Type", "application/json");
+    request->write(buffer.GetString(), buffer.GetSize());
+}
+
+void FcgiHelper::WriteJson(fastcgi::Request* request,const rapidjson::Document& doc)
+{
+    rapidjson::StringBuffer outputBuffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);
+    doc.Accept(writer);
+    request->write(outputBuffer.GetString(), outputBuffer.GetSize());
+}
+
 

@@ -14,8 +14,10 @@
 #ifndef REPOSITORYCONTEXT_H
 #define REPOSITORYCONTEXT_H
 #include <boost/smart_ptr.hpp>
-#include <cppconn/connection.h>
-#include <cppconn/driver.h>
+namespace sql{
+    class Savepoint;
+    class Connection;
+}
 class RepositoryContext {
 public:
     RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
@@ -24,6 +26,7 @@ public:
     virtual ~RepositoryContext();
 private:
     std::string m_dbHost, m_dbUser, m_dbPassword;
+    sql::Savepoint* m_pSavePoint;
     boost::shared_ptr<sql::Connection> m_dbConnection;
 };
 

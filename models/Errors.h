@@ -16,8 +16,9 @@
 
 enum Error{
     None = 0,
-    InvalidJsonError,
-    
+    InvalidJson,
+    RequiredDataMissing,
+    TokenExpired
 };
 
 #endif /* ERRORS_H */

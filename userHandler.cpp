@@ -32,6 +32,11 @@
 #include <rapidjson/writer.h>
 #include "Errors.h"
 #include "FcgiHelper.h"
+#include <fastcgi2/logger.h>
+#include <fastcgi2/config.h>
+#include "dao/UserRepository.h"
+#include "utils/Subrouter.h"
+
 typedef std::unordered_map<std::string, std::string> stringmap;
 
 using namespace boost::filesystem;
@@ -52,7 +57,7 @@ UserHandler::UserHandler(fastcgi::ComponentContext *context)
     HandlerDescriptor* updateUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserName, this, _1, _2));
     updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{32})/")));
     updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
-     std::cout << "RaitingHandler::UserHandler" << std::endl;
+    std::cout << "UserHandler::ctor" << std::endl;
 }
 
 void UserHandler::onLoad()
@@ -61,7 +66,7 @@ void UserHandler::onLoad()
     std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
     std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
     m_pUserRepository.reset(new UserRepository(mysql_host, mysql_user, mysql_pass));
-    m_queueProcessingThread= boost::thread(boost::bind(&UserHandler::QueueProcessingRoutine, this));
+    m_queueProcessingThread = boost::thread(boost::bind(&UserHandler::QueueProcessingRoutine, this));
 }
 
 void UserHandler::onUnload()
@@ -77,10 +82,7 @@ void UserHandler::GetOnlineCount(fastcgi::Request* request, fastcgi::HandlerCont
     responseDock.SetObject();
     rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
     responseDock.AddMember("online_count", m_pUserRepository->GetOnlineUsersCount(), allocator);
-    rapidjson::StringBuffer outputBuffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);
-    responseDock.Accept(writer);
-    request->write(outputBuffer.GetString(), outputBuffer.GetSize());
+    FcgiHelper::WriteJson(request, responseDock);
 }
 
 void UserHandler::GetUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext)
@@ -92,10 +94,7 @@ void UserHandler::GetUserName(fastcgi::Request* request, fastcgi::HandlerContext
         responseDock.SetObject();
         rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
         responseDock.AddMember("name", rapidjson::Value(m_pUserRepository->GetUserName(userID).c_str(), allocator), allocator);
-        rapidjson::StringBuffer outputBuffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);
-        responseDock.Accept(writer);
-        request->write(outputBuffer.GetString(), outputBuffer.GetSize());
+        FcgiHelper::WriteJson(request, responseDock);
     }
 }
 
@@ -120,10 +119,9 @@ void UserHandler::UpdateUserName(fastcgi::Request* request, fastcgi::HandlerCont
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    if (!JsonUtils::ParseJson(doc, buffer))
-    {
-	FcgiHelper::WriteParseError(request, doc.GetParseError());
-	return;
+    if (!JsonUtils::ParseJson(doc, buffer)) {
+        FcgiHelper::WriteParseError(request, doc.GetParseError());
+        return;
     }
     UserRequest userRequest;
     boost::any param = handlerContext->getParam("user_id");

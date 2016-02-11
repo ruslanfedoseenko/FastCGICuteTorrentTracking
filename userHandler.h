@@ -14,18 +14,16 @@
 #ifndef USERHANDLER_H
 #define USERHANDLER_H
 #include <fastcgi2/component.h>
-#include <fastcgi2/component_factory.h>
 #include <fastcgi2/handler.h>
 #include <fastcgi2/request.h>
-#include <fastcgi2/logger.h>
-#include <fastcgi2/config.h>
-#include "dao/UserRepository.h"
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include "UserRequest.h"
-#include "utils/Subrouter.h"
 #include <vector>
+
+class UserRepository;
+class Subrouter;
 
 class UserHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 public:

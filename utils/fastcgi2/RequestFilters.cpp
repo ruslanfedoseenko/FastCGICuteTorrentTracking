@@ -64,6 +64,7 @@ private:
 bool
 RegexFilter::check(const std::string &value)
 {
+    vraibles.clear();
     namesaving_smatch what(regex_);
     bool r = boost::regex_match(value, what, regex_);
     if (r) {
