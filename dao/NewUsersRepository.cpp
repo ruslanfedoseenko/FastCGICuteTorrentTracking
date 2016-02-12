@@ -23,6 +23,7 @@
 #include <fastcgi2/logger.h>
 #include <fastcgi2/config.h>
 #include <stdexcept>
+#include <chrono>
 #define SESSION_EXPIRE_IN 2400
 
 NewUsersRepository::NewUsersRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
@@ -181,9 +182,9 @@ void NewUsersRepository::DeactivateToken(int id, boost::shared_ptr<RepositoryCon
 
 std::string NewUsersRepository::GenerateAuthToken()
 {
-    time_t seconds;
-    time(&seconds);
-    std::string str = std::to_string(seconds);
+    auto duration =  std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    std::string str = std::to_string(millis);
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
     SHA256_Init(&sha256);

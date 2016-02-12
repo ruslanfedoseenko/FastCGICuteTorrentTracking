@@ -50,7 +50,7 @@ std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int p
 	    context = createContext();
 	}
 	boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`parent_comment_id`, tc1.`infohash`, tc1.`comment`, tc1.`uid`, tc1.`comment_date`, tc1.`rating`, (SELECT  GROUP_CONCAT(tc2.`id` SEPARATOR ',')  FROM `torrent_coments` as tc2 where tc2.`parent_comment_id` = tc1.`id`) AS ChildrenComments  FROM `torrent_coments` as tc1 WHERE `infohash`=? ORDER BY tc1.`comment_date` LIMIT ?, ?"));
+	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, tc1.`user_id`, tc1.`date`, tc1.`rating` FROM `torrent_coments` as tc1 WHERE `infohash`=? ORDER BY tc1.`date` LIMIT ?, ?"));
 	getCommentsStatment->setString(1, infoHash);
 	getCommentsStatment->setInt(2, page * PAGE_SIZE);
 	getCommentsStatment->setInt(3, (page + 1) * PAGE_SIZE);
@@ -59,26 +59,11 @@ std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int p
 	{
 	    Comment comment;
 	    comment.id = commentsResultSet->getInt("id");
-	    comment.parentCommentId = commentsResultSet->isNull("parent_comment_id") ? -1 : commentsResultSet->getInt("parent_comment_id");
 	    comment.infohash = commentsResultSet->getString("infohash");
-	    comment.comment = commentsResultSet->getString("comment");
-	    comment.userToken = commentsResultSet->getString("uid");
-	    comment.comentTime = commentsResultSet->getString("comment_date");
+	    comment.comment = commentsResultSet->getString("comment_data");
+	    comment.userToken = commentsResultSet->getString("user_id");
+	    comment.comentTime = commentsResultSet->getString("date");
 	    comment.rating = commentsResultSet->getDouble("rating");
-	    if (!commentsResultSet->isNull("ChildrenComments"))
-	    {
-		std::string childrenComments = commentsResultSet->getString("ChildrenComments");
-		std::vector<std::string> strs;
-
-		if (!childrenComments.empty())
-		{
-		    boost::split(strs, childrenComments, boost::is_any_of(","));
-		    for (int i = 0; i < strs.size(); i++)
-		    {
-			comment.childComments.push_back(std::stoi(strs[i]));
-		    }
-		}
-	    }
 	    comments.push_back(comment);
 	}
 	if (comments.size() > 0)

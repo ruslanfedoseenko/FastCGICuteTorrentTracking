@@ -21,7 +21,8 @@
 #include <stlcache/policy_adaptive.hpp>
 #include <rapidjson/document.h>
 #include "Comments.h"
-#include "dao/CommentsRepository.h"
+class CommentsRepository;
+class Subrouter;
 typedef stlcache::cache<std::string, rapidjson::Document*, stlcache::policy_adaptive> CacheAdaptive;
 class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
@@ -37,12 +38,14 @@ class CommentsHandler : virtual public fastcgi::Component, virtual public fastcg
     boost::thread writingThread_;
     static void buildJson(rapidjson::Document* pt, std::vector<Comment>& comments);
     static void AddChildComments(rapidjson::Value* comment, std::vector<Comment>* commentObjs, std::vector<int>* childComments, rapidjson::Document::AllocatorType& allocator);
-    
+    boost::scoped_ptr<Subrouter> m_pRouter;
     CacheAdaptive commentsCache;
 public:
     CommentsHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void handleGetCommentsRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void handleAddCommentRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void QueueProcessingThread();
 };
