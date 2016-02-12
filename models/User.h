@@ -15,8 +15,8 @@
 #define USER_H
 
 struct User {
-    std::string userId, userName, email, authToken, password;
-    unsigned lastSeen;
+    std::string userName, email, authToken, password;
+    unsigned lastSeen, id;
 };
 
 #endif /* USER_H */

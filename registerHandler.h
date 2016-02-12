@@ -32,6 +32,7 @@ public:
     void handleRegisterRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleAuthRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleAuthKeepAliveRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void handleCheckMailRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
 private:
     boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     fastcgi::Logger* m_logger;

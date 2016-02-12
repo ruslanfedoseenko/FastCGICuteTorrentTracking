@@ -22,6 +22,7 @@
 #include <cppconn/resultset.h>
 #include <fastcgi2/logger.h>
 #include <fastcgi2/config.h>
+#include <stdexcept>
 #define SESSION_EXPIRE_IN 2400
 
 NewUsersRepository::NewUsersRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
@@ -33,12 +34,16 @@ std::string NewUsersRepository::AddUser(const User& user, boost::shared_ptr<Repo
     {
         context = createContext();
     }
+    if (!IsMailUnique(user.email, context))
+    {
+	throw std::logic_error("User with this email already exists");
+    }
     std::string authToken = GenerateAuthToken();
     int currentAuthTokenId = AddAuthToken(authToken, context);
     boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-    boost::scoped_ptr<sql::PreparedStatement> insertUserStatment(connection->prepareStatement("INSERT INTO `users`(`user_id`, `userName`, `mail`, `password`, `token_id`) VALUES ( ?, ?, ?, ?, ?)"));
+    boost::scoped_ptr<sql::PreparedStatement> insertUserStatment(connection->prepareStatement("INSERT INTO `users`(`id`, `userName`, `mail`, `password`, `token_id`) VALUES ( ?, ?, ?, ?, ?)"));
     int index = 1;
-    insertUserStatment->setString(index++, user.userId);
+    insertUserStatment->setInt(index++, user.id);
     insertUserStatment->setString(index++, user.userName);
     insertUserStatment->setString(index++, user.email);
     insertUserStatment->setString(index++, user.password);
@@ -47,18 +52,18 @@ std::string NewUsersRepository::AddUser(const User& user, boost::shared_ptr<Repo
     return authToken;
 }
 
-User NewUsersRepository::GetUser(const std::string& userId, boost::shared_ptr<RepositoryContext> context)
+User NewUsersRepository::GetUser(const unsigned& userId, boost::shared_ptr<RepositoryContext> context)
 {
     if (context == nullptr)
     {
         context = createContext();
     }
     User result;
-    result.userId = userId;
+    result.id = userId;
     boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-    boost::scoped_ptr<sql::PreparedStatement> getUserStatment(connection->prepareStatement("SELECT u.`userName` , u.`mail` , u.`password` , at.token FROM  `users` AS u LEFT JOIN auth_tokens AS at ON u.token_id = at.id AND at.is_enabled =  TRUE AND TIMESTAMPDIFF( SECOND , at.`last_used` , CURRENT_TIMESTAMP ) < ? WHERE u.`user_id` =  ?"));
-    getUserStatment->setInt(0, SESSION_EXPIRE_IN);
-    getUserStatment->setString(1, userId);
+    boost::scoped_ptr<sql::PreparedStatement> getUserStatment(connection->prepareStatement("SELECT u.`userName` , u.`mail` , u.`password` , at.token FROM  `users` AS u LEFT JOIN auth_tokens AS at ON u.token_id = at.id AND at.is_enabled =  TRUE WHERE u.`id` =  ? AND TIMESTAMPDIFF( SECOND , at.`last_used` , CURRENT_TIMESTAMP ) < ? "));
+    getUserStatment->setInt(1, SESSION_EXPIRE_IN);
+    getUserStatment->setInt(2, userId);
     boost::scoped_ptr<sql::ResultSet> userResult(getUserStatment->executeQuery());
     while (userResult->next())
     {
@@ -82,7 +87,7 @@ std::string NewUsersRepository::Authentificate(const std::string& login, const s
         context = createContext();
     }
     boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-    boost::scoped_ptr<sql::PreparedStatement> findUserStatment(connection->prepareStatement("SELECT COUNT(*), `token_id`, `user_id` FROM `users`  WHERE `userName` = ? AND `password` = ? LIMIT 0,1"));
+    boost::scoped_ptr<sql::PreparedStatement> findUserStatment(connection->prepareStatement("SELECT COUNT(*), `token_id`, `id` FROM `users`  WHERE `userName` = ? AND `password` = ? LIMIT 0,1"));
     findUserStatment->setString(1, login);
     findUserStatment->setString(2, password);
     boost::scoped_ptr<sql::ResultSet> findUserResult(findUserStatment->executeQuery());
@@ -96,14 +101,14 @@ std::string NewUsersRepository::Authentificate(const std::string& login, const s
                 std::cout << "Warning more than one user found for data" << login << password;
             }
             int32_t tokenId = findUserResult->getInt(2);
-            std::string userId = findUserResult->getString(3);
+            int32_t userId = findUserResult->getInt(3);
             DeactivateToken(tokenId, context);
             std::string authToken = GenerateAuthToken();
             int currentAuthTokenId = AddAuthToken(authToken, context);
             std::cout << "new token id: " << currentAuthTokenId << " UserId: " << userId << std::endl;
-            boost::scoped_ptr<sql::PreparedStatement> updateTokenStatment(connection->prepareStatement("UPDATE `users` SET `token_id`=? WHERE `user_id` = ?"));
+            boost::scoped_ptr<sql::PreparedStatement> updateTokenStatment(connection->prepareStatement("UPDATE `users` SET `token_id`=? WHERE `id` = ?"));
             updateTokenStatment->setInt(1, currentAuthTokenId);
-            updateTokenStatment->setString(2, userId);
+            updateTokenStatment->setInt(2, userId);
             updateTokenStatment->executeUpdate();
             return authToken;
         }
@@ -192,4 +197,21 @@ std::string NewUsersRepository::GenerateAuthToken()
     return ss.str();
 }
 
-
+bool NewUsersRepository::IsMailUnique(const std::string& mail, boost::shared_ptr<RepositoryContext> context)
+{
+    if (context == nullptr)
+    {
+        context = createContext();
+    }
+    boost::shared_ptr<sql::Connection> connection = context->GetConnection();
+    boost::scoped_ptr<sql::PreparedStatement> countMailStatment(connection->prepareStatement("SELECT COUNT(*) FROM `users` where mail = ?"));
+    countMailStatment->setString(1, mail);
+    boost::scoped_ptr<sql::ResultSet> result(countMailStatment->executeQuery());
+    while (result->next())
+    {
+        return result->getInt(1) == 0;
+    }
+    
+    return true;
+    
+}

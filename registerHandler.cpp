@@ -34,6 +34,9 @@ RegisterHandler::RegisterHandler(fastcgi::ComponentContext *context)
     HandlerDescriptor* registerHandler = m_router->RegisterHandler(boost::bind(&RegisterHandler::handleRegisterRequest, this, _1, _2));
     registerHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/register/")));
     registerHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
+    HandlerDescriptor* checkMailHandler = m_router->RegisterHandler(boost::bind(&RegisterHandler::handleCheckMailRequest, this, _1, _2));
+    checkMailHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/register/check-mail/")));
+    checkMailHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
     HandlerDescriptor* authHandler = m_router->RegisterHandler(boost::bind(&RegisterHandler::handleAuthRequest, this, _1, _2));
     authHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/login/")));
     authHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
@@ -76,21 +79,29 @@ void RegisterHandler::handleRegisterRequest(fastcgi::Request* request, fastcgi::
     User user;
     if (doc.IsObject() && doc.HasMember("user"))
     {
+	std::string authToken;
         try
         {
             const rapidjson::Value& userJson = doc["user"];
             user.email = JsonUtils::GetValue<std::string>(userJson, "email");
             user.password = JsonUtils::GetValue<std::string>(userJson, "password");
             user.userName = JsonUtils::GetValue<std::string>(userJson, "username");
-            user.userId = JsonUtils::GetValue<std::string>(userJson, "uid");
+	    authToken  = m_pAuthRepo->AddUser(user);
         }
-        catch (std::exception ex)
+	catch (std::logic_error& ex)
         {
             m_logger->error("Exception occurred: %s", ex.what());
             FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+            return;
+        }
+        catch (std::exception& ex)
+        {
+            m_logger->error("Exception occurred: %s", ex.what());
+            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
         }
 
-        std::string authToken = m_pAuthRepo->AddUser(user);
+        
         rapidjson::Document response;
         response.SetObject();
 
@@ -119,18 +130,6 @@ void RegisterHandler::handleAuthRequest(fastcgi::Request* request, fastcgi::Hand
         {
             login = doc["username"].GetString();
             password = doc["password"].GetString();
-        }
-        catch (sql::SQLException ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.getSQLStateCStr());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.getSQLStateCStr()));
-            return;
-        }
-        catch (std::invalid_argument ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
         }
         catch (std::runtime_error ex)
         {
@@ -185,6 +184,41 @@ void RegisterHandler::handleAuthKeepAliveRequest(fastcgi::Request* request, fast
     }
 }
 
+void RegisterHandler::handleCheckMailRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
+{
+     fastcgi::DataBuffer buffer = request->requestBody();
+    rapidjson::Document doc;
+    if (!JsonUtils::ParseJson(doc, buffer))
+    {
+        FcgiHelper::WriteParseError(request, doc.GetParseError());
+        return;
+    }
+    if (doc.IsObject())
+    {
+        std::string mail;
+        try
+        {
+            mail = doc["mail"].GetString();
+            
+        }
+        catch (std::runtime_error ex)
+        {
+            m_logger->error("Exception occurred: %s", ex.what());
+            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+            return;
+        }
+        catch (std::exception ex)
+        {
+            m_logger->error("Exception occurred: %s", ex.what());
+            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+            return;
+        }
+    }
+    else
+    {
+        FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required root object");
+    }
+}
 
 
 
