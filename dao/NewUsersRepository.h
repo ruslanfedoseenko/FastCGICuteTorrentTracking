@@ -16,6 +16,7 @@
 
 #include "BaseRepository.h"
 #include "User.h"
+
 class NewUsersRepository : public BaseRepository {
 public:
     NewUsersRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
@@ -25,6 +26,7 @@ public:
     std::string Authentificate(const std::string& login, const std::string& password, boost::shared_ptr<RepositoryContext> context = nullptr);
     bool CheckAlive(const std::string authToken, boost::shared_ptr<RepositoryContext> context = nullptr);
     bool IsMailUnique(const std::string& mail, boost::shared_ptr<RepositoryContext> context = nullptr);
+    int GetUserIdByActiveToken(const std::string& authToken, boost::shared_ptr<RepositoryContext> context = nullptr);
 private:
     std::string GenerateAuthToken();
     int AddAuthToken(std::string token, boost::shared_ptr<RepositoryContext> context = nullptr);

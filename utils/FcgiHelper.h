@@ -14,11 +14,12 @@
 #ifndef FCGIHELPER_H
 #define FCGIHELPER_H
 #include <string>
-namespace fastcgi{
+namespace fastcgi {
     class Request;
 }
 #include <rapidjson/document.h>
 #include <rapidjson/error/error.h>
+
 class FcgiHelper {
 public:
     static void WriteParseError(fastcgi::Request* request, rapidjson::ParseErrorCode err);

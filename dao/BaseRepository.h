@@ -15,6 +15,7 @@
 #define BASEREPOSITORY_H
 #include "RepositoryContext.h"
 #include <boost/smart_ptr.hpp>
+
 class BaseRepository {
 public:
     BaseRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);

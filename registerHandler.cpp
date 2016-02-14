@@ -25,6 +25,7 @@
 #include "Errors.h"
 #include <boost/format.hpp>
 #include <cppconn/exception.h>
+#include <boost/thread/detail/thread.hpp>
 
 RegisterHandler::RegisterHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
@@ -51,15 +52,18 @@ void RegisterHandler::onLoad()
     m_logger = context()->findComponent<fastcgi::Logger>(loggerComponentName);
     if (!m_logger)
     {
-        throw std::runtime_error("cannot get component " + loggerComponentName);
+	throw std::runtime_error("cannot get component " + loggerComponentName);
     }
     std::string mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
     std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
     std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
     m_pAuthRepo.reset(new NewUsersRepository(mysql_host, mysql_user, mysql_pass));
+    //m_queueProcessingThread = boost::thread();
 }
 
-void RegisterHandler::onUnload() { }
+void RegisterHandler::onUnload()
+{
+}
 
 void RegisterHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
@@ -73,44 +77,44 @@ void RegisterHandler::handleRegisterRequest(fastcgi::Request* request, fastcgi::
     rapidjson::Document doc;
     if (!JsonUtils::ParseJson(doc, buffer))
     {
-        FcgiHelper::WriteParseError(request, doc.GetParseError());
-        return;
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+	return;
     }
     User user;
     if (doc.IsObject() && doc.HasMember("user"))
     {
 	std::string authToken;
-        try
-        {
-            const rapidjson::Value& userJson = doc["user"];
-            user.email = JsonUtils::GetValue<std::string>(userJson, "email");
-            user.password = JsonUtils::GetValue<std::string>(userJson, "password");
-            user.userName = JsonUtils::GetValue<std::string>(userJson, "username");
+	try
+	{
+	    const rapidjson::Value& userJson = doc["user"];
+	    user.email = JsonUtils::GetValue<std::string>(userJson, "email");
+	    user.password = JsonUtils::GetValue<std::string>(userJson, "password");
+	    user.userName = JsonUtils::GetValue<std::string>(userJson, "username");
 	    authToken  = m_pAuthRepo->AddUser(user);
-        }
+	}
 	catch (std::logic_error& ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
-        }
-        catch (std::exception& ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
 	    return;
-        }
+	}
+	catch (std::exception& ex)
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
+	}
 
-        
-        rapidjson::Document response;
-        response.SetObject();
 
-        response.AddMember("token", rapidjson::Value(authToken.c_str(), response.GetAllocator()), response.GetAllocator());
-        FcgiHelper::WriteJson(request, response);
+	rapidjson::Document response;
+	response.SetObject();
+
+	response.AddMember("token", rapidjson::Value(authToken.c_str(), response.GetAllocator()), response.GetAllocator());
+	FcgiHelper::WriteJson(request, response);
     }
     else
     {
-        FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required `user` object");
+	FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required `user` object");
     }
 }
 
@@ -120,103 +124,103 @@ void RegisterHandler::handleAuthRequest(fastcgi::Request* request, fastcgi::Hand
     rapidjson::Document doc;
     if (!JsonUtils::ParseJson(doc, buffer))
     {
-        FcgiHelper::WriteParseError(request, doc.GetParseError());
-        return;
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+	return;
     }
     if (doc.IsObject())
     {
-        std::string authToken, login, password;
-        try
-        {
-            login = doc["username"].GetString();
-            password = doc["password"].GetString();
-        }
-        catch (std::runtime_error ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
-        }
-        catch (std::exception ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
-        }
-        authToken = m_pAuthRepo->Authentificate(login, password);
-        if (authToken.empty())
-        {
-            FcgiHelper::WriteError(request, RequiredDataMissing, "Invalid username or password");
-            return;
-        }
-        rapidjson::Document response;
-        response.SetObject();
+	std::string authToken, login, password;
+	try
+	{
+	    login = doc["username"].GetString();
+	    password = doc["password"].GetString();
+	}
+	catch (std::runtime_error ex)
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
+	}
+	catch (std::exception ex)
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
+	}
+	authToken = m_pAuthRepo->Authentificate(login, password);
+	if (authToken.empty())
+	{
+	    FcgiHelper::WriteError(request, RequiredDataMissing, "Invalid username or password");
+	    return;
+	}
+	rapidjson::Document response;
+	response.SetObject();
 
-        response.AddMember("token", rapidjson::Value(authToken.c_str(), authToken.length()), response.GetAllocator());
-        FcgiHelper::WriteJson(request, response);
+	response.AddMember("token", rapidjson::Value(authToken.c_str(), authToken.length()), response.GetAllocator());
+	FcgiHelper::WriteJson(request, response);
 
 
     }
     else
     {
-        FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required root object");
+	FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required root object");
     }
 
 }
 
-void RegisterHandler::handleAuthKeepAliveRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext) 
+void RegisterHandler::handleAuthKeepAliveRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
 {
     boost::any tokenIdVal = handlerContext->getParam("auth_token");
     if (!tokenIdVal.empty())
     {
-        std::string token = boost::any_cast<std::string>(tokenIdVal);
-        m_logger->info("Token update recived: %s", token.c_str());
-        if (!m_pAuthRepo->CheckAlive(token))
-        {
-            m_logger->error("Expired token update received for token %s", token.c_str());
-            FcgiHelper::WriteError(request, TokenExpired, "Token expired");
-            return;
-        }
-        rapidjson::Document response;
-        response.SetObject();
-        response.AddMember("state", rapidjson::Value("ok", 2), response.GetAllocator());
-        FcgiHelper::WriteJson(request, response);
+	std::string token = boost::any_cast<std::string>(tokenIdVal);
+	m_logger->info("Token update recived: %s", token.c_str());
+	if (!m_pAuthRepo->CheckAlive(token))
+	{
+	    m_logger->error("Expired token update received for token %s", token.c_str());
+	    FcgiHelper::WriteError(request, TokenExpired, "Token expired");
+	    return;
+	}
+	rapidjson::Document response;
+	response.SetObject();
+	response.AddMember("state", rapidjson::Value("ok", 2), response.GetAllocator());
+	FcgiHelper::WriteJson(request, response);
     }
 }
 
 void RegisterHandler::handleCheckMailRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
 {
-     fastcgi::DataBuffer buffer = request->requestBody();
+    fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
     if (!JsonUtils::ParseJson(doc, buffer))
     {
-        FcgiHelper::WriteParseError(request, doc.GetParseError());
-        return;
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+	return;
     }
     if (doc.IsObject())
     {
-        std::string mail;
-        try
-        {
-            mail = doc["mail"].GetString();
-            
-        }
-        catch (std::runtime_error ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
-        }
-        catch (std::exception ex)
-        {
-            m_logger->error("Exception occurred: %s", ex.what());
-            FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
-            return;
-        }
+	std::string mail;
+	try
+	{
+	    mail = doc["mail"].GetString();
+
+	}
+	catch (std::runtime_error ex)
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
+	}
+	catch (std::exception ex)
+	{
+	    m_logger->error("Exception occurred: %s", ex.what());
+	    FcgiHelper::WriteError(request, RequiredDataMissing, boost::str(boost::format("Missing required data: %1%") % ex.what()));
+	    return;
+	}
     }
     else
     {
-        FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required root object");
+	FcgiHelper::WriteError(request, RequiredDataMissing, "Missing required root object");
     }
 }
 

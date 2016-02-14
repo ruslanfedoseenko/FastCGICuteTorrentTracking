@@ -17,8 +17,9 @@
 #include <string>
 #include <boost/variant.hpp>
 
-struct UserRequest{
-    enum RequestType{
+struct UserRequest {
+
+    enum RequestType {
         HeartBeat,
         UserNameUpdate
     };

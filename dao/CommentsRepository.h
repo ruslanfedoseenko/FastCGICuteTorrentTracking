@@ -23,19 +23,22 @@
 #include "RepositoryContext.h"
 #include "BaseRepository.h"
 #define PAGE_SIZE 30
+class NewUsersRepository;
 class CommentsRepository : BaseRepository {
-    typedef stlcache::cache<std::string, std::vector<Comment>, stlcache::policy_adaptive> CacheAdaptive;
+    typedef stlcache::cache<uint32_t, std::vector<Comment>, stlcache::policy_adaptive> CacheAdaptive;
 public:
     CommentsRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
     std::vector<Comment> GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context = nullptr);
     int GetCommentsPageCount(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);
     float GetCommentsAvarageRating(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);
     void AddComments(const std::vector<Comment>& comments, boost::shared_ptr<RepositoryContext> context = nullptr);
+    bool CheckCommentToken(std::string token, int comment_id, boost::shared_ptr<RepositoryContext> context = nullptr);
     virtual ~CommentsRepository();
 private:
+    boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     CacheAdaptive m_commentsCache;
     boost::mutex m_readMutex;
-    
+
 };
 
 #endif /* COMMENTSREPOSITORY_H */

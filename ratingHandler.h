@@ -25,9 +25,8 @@
 #include "Rating.h"
 #include "RaitingRepository.h"
 #include "utils/Subrouter.h"
-class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
-    
+class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
     std::vector<Rating> queue_;
 
     boost::condition queueCondition_;
@@ -44,6 +43,6 @@ public:
     virtual void onLoad();
     virtual void onUnload();
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
-    void AddRating(fastcgi::Request* request,fastcgi::HandlerContext *handlerContext);
+    void AddRating(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
     void QueueProcessingThread();
 };

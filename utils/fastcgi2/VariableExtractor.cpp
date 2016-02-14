@@ -21,11 +21,10 @@ TVar VariableExtractor::Extract(boost::smatch match, const std::string& vraibleN
 {
     if (match.position(vraibleName) > 0)
     {
-        return boost::lexical_cast<TVar>(match[vraibleName]);
+	return boost::lexical_cast<TVar>(match[vraibleName]);
     }
     return TVar();
 }
-
 
 VariableExtractor::~VariableExtractor()
 {

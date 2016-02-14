@@ -15,11 +15,16 @@
 #define COMMENTS_H
 #include <string>
 #include <vector>
+
 struct Comment {
-    int parentCommentId, id;
-    std::string comment, infohash, userToken, comentTime;
+    Comment()
+    {
+        id = 0;
+        rating = 0.0f;
+    }
+    int id;
+    std::string comment, infohash, userToken, comentAddDateTime, comentUpdateDateTime;
     float rating;
-    std::vector<int> childComments;
 };
 
 #endif /* COMMENTS_H */

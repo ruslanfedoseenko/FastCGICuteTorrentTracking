@@ -18,11 +18,12 @@
 #include <fastcgi2/request.h>
 
 #include <boost/smart_ptr.hpp>
-namespace fastcgi{
+namespace fastcgi {
     class Logger;
 }
 class Subrouter;
 class NewUsersRepository;
+
 class RegisterHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 public:
     RegisterHandler(fastcgi::ComponentContext *context);
@@ -37,7 +38,7 @@ private:
     boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     fastcgi::Logger* m_logger;
     boost::scoped_ptr<Subrouter> m_router;
-
+    boost::thread m_queueProcessingThread;
 };
 
 #endif /* REGISTERHANDLER_H */

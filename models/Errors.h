@@ -14,11 +14,12 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
-enum Error{
+enum Error {
     None = 0,
     InvalidJson,
     RequiredDataMissing,
-    TokenExpired
+    TokenExpired,
+    InvalidPageNumber
 };
 
 #endif /* ERRORS_H */

@@ -14,10 +14,11 @@
 #ifndef REPOSITORYCONTEXT_H
 #define REPOSITORYCONTEXT_H
 #include <boost/smart_ptr.hpp>
-namespace sql{
+namespace sql {
     class Savepoint;
     class Connection;
 }
+
 class RepositoryContext {
 public:
     RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);

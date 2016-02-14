@@ -45,8 +45,19 @@
           <itemPath>utils/fastcgi2/VariableExtractor.cpp</itemPath>
           <itemPath>utils/fastcgi2/VariableExtractor.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="mail" displayName="mail" projectFiles="true">
+          <itemPath>utils/mail/CSmtp.cpp</itemPath>
+          <itemPath>utils/mail/CSmtp.h</itemPath>
+          <itemPath>utils/mail/base64.cpp</itemPath>
+          <itemPath>utils/mail/base64.h</itemPath>
+          <itemPath>utils/mail/main.cpp</itemPath>
+          <itemPath>utils/mail/md5.cpp</itemPath>
+          <itemPath>utils/mail/md5.h</itemPath>
+        </logicalFolder>
         <itemPath>utils/FcgiHelper.cpp</itemPath>
         <itemPath>utils/FcgiHelper.h</itemPath>
+        <itemPath>utils/HashUtils.cpp</itemPath>
+        <itemPath>utils/HashUtils.h</itemPath>
         <itemPath>dao/JsonUtils.cpp</itemPath>
         <itemPath>dao/JsonUtils.h</itemPath>
         <itemPath>utils/TimeUtils.cpp</itemPath>
@@ -66,6 +77,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>utils/mail</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="2">
@@ -84,7 +98,6 @@
             <pElem>utils</pElem>
             <pElem>utils/fastcgi2</pElem>
           </incDir>
-          <commandLine>-fpermissive</commandLine>
         </ccTool>
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}</output>
@@ -157,6 +170,10 @@
       </item>
       <item path="utils/FcgiHelper.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="utils/HashUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/HashUtils.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="utils/Subrouter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="utils/Subrouter.h" ex="false" tool="3" flavor2="0">
@@ -177,6 +194,20 @@
             flavor2="0">
       </item>
       <item path="utils/fastcgi2/VariableExtractor.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/CSmtp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/CSmtp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/base64.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/base64.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/md5.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/md5.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="2">
@@ -199,7 +230,7 @@
             <pElem>utils</pElem>
             <pElem>utils/fastcgi2</pElem>
           </incDir>
-          <commandLine>-fpermissive</commandLine>
+          <commandLine>-O2</commandLine>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -299,6 +330,10 @@
       </item>
       <item path="utils/FcgiHelper.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="utils/HashUtils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/HashUtils.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="utils/Subrouter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="utils/Subrouter.h" ex="false" tool="3" flavor2="0">
@@ -319,6 +354,20 @@
             flavor2="0">
       </item>
       <item path="utils/fastcgi2/VariableExtractor.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/CSmtp.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/CSmtp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/base64.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/base64.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utils/mail/main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/md5.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="utils/mail/md5.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

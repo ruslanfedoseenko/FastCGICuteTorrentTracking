@@ -14,9 +14,9 @@
 #include "BaseRepository.h"
 
 BaseRepository::BaseRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
-    : m_dbHost(dbHost)
-    , m_dbUser(dbUser)
-    , m_dbPassword(dbPassword)
+: m_dbHost(dbHost)
+, m_dbUser(dbUser)
+, m_dbPassword(dbPassword)
 {
 }
 

@@ -121,13 +121,13 @@ void UserRepository::SetUserNames(const std::unordered_map<std::string, std::str
     query.append(" ON DUPLICATE KEY UPDATE `userName`= VALUES(`userName`)");
     boost::scoped_ptr<sql::PreparedStatement> stmt(connection->prepareStatement(query));
     int index = 1;
-    for (std::unordered_map<std::string, std::string>::const_iterator i = userNames.begin(); i!= userNames.end(); ++i)
+    for (std::unordered_map<std::string, std::string>::const_iterator i = userNames.begin(); i != userNames.end(); ++i)
     {
 	stmt->setString(index++, (*i).first);
 	stmt->setString(index++, (*i).second);
     }
     stmt->execute();
-    
+
 }
 
 std::string  UserRepository::GetUserName(const std::string& userToken, boost::shared_ptr<RepositoryContext> context)

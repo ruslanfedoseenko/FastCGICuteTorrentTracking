@@ -16,12 +16,10 @@
 
 #include "RequestFilters.h"
 
-
 struct HandlerDescriptor {
-
     std::list<boost::shared_ptr<RequestFilter>> Filters;
-    boost::function<void(fastcgi::Request*,fastcgi::HandlerContext*)> Handler;
-    
+    boost::function<void(fastcgi::Request*, fastcgi::HandlerContext*) > Handler;
+
 
 };
 

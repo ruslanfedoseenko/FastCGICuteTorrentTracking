@@ -89,12 +89,13 @@ void UserHandler::GetUserName(fastcgi::Request* request, fastcgi::HandlerContext
 {
     rapidjson::Document responseDock;
     boost::any param = handlerContext->getParam("user_id");
-    if (!param.empty()) {
-        std::string userID = boost::any_cast<std::string>(param);
-        responseDock.SetObject();
-        rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
-        responseDock.AddMember("name", rapidjson::Value(m_pUserRepository->GetUserName(userID).c_str(), allocator), allocator);
-        FcgiHelper::WriteJson(request, responseDock);
+    if (!param.empty())
+    {
+	std::string userID = boost::any_cast<std::string>(param);
+	responseDock.SetObject();
+	rapidjson::Document::AllocatorType& allocator = responseDock.GetAllocator();
+	responseDock.AddMember("name", rapidjson::Value(m_pUserRepository->GetUserName(userID).c_str(), allocator), allocator);
+	FcgiHelper::WriteJson(request, responseDock);
     }
 }
 
@@ -102,16 +103,17 @@ void UserHandler::UpdateUserSession(fastcgi::Request* request, fastcgi::HandlerC
 {
     UserRequest userRequest;
     boost::any param = handlerContext->getParam("user_id");
-    if (!param.empty()) {
-        std::string userID = boost::any_cast<std::string>(param);
-        time_t updateTime;
-        time(&updateTime);
-        userRequest.type = UserRequest::HeartBeat;
-        userRequest.userToken = userID;
-        userRequest.value = updateTime;
-        boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
-        m_requestQueue.push_back(userRequest);
-        m_queueCondition.notify_one();
+    if (!param.empty())
+    {
+	std::string userID = boost::any_cast<std::string>(param);
+	time_t updateTime;
+	time(&updateTime);
+	userRequest.type = UserRequest::HeartBeat;
+	userRequest.userToken = userID;
+	userRequest.value = updateTime;
+	boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
+	m_requestQueue.push_back(userRequest);
+	m_queueCondition.notify_one();
     }
 }
 
@@ -119,29 +121,33 @@ void UserHandler::UpdateUserName(fastcgi::Request* request, fastcgi::HandlerCont
 {
     fastcgi::DataBuffer buffer = request->requestBody();
     rapidjson::Document doc;
-    if (!JsonUtils::ParseJson(doc, buffer)) {
-        FcgiHelper::WriteParseError(request, doc.GetParseError());
-        return;
+    if (!JsonUtils::ParseJson(doc, buffer))
+    {
+	FcgiHelper::WriteParseError(request, doc.GetParseError());
+	return;
     }
     UserRequest userRequest;
     boost::any param = handlerContext->getParam("user_id");
-    if (!param.empty()) {
-        std::string userID = boost::any_cast<std::string>(param);
-        if (doc.IsObject() && doc.HasMember("user")) {
-            rapidjson::Value& userObject = doc["user"];
-            userRequest.userToken = userID;
-            userRequest.value = JsonUtils::GetValue<std::string>(userObject, "name");
-            userRequest.type = UserRequest::UserNameUpdate;
-            boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
-            m_requestQueue.push_back(userRequest);
-            m_queueCondition.notify_one();
-        }
-        else {
-            std::stringbuf buffer("{ state: \"error\", errorMessage: \"Missing root user object\"}");
-            request->setStatus(400);
-            request->write(&buffer);
-            return;
-        }
+    if (!param.empty())
+    {
+	std::string userID = boost::any_cast<std::string>(param);
+	if (doc.IsObject() && doc.HasMember("user"))
+	{
+	    rapidjson::Value& userObject = doc["user"];
+	    userRequest.userToken = userID;
+	    userRequest.value = JsonUtils::GetValue<std::string>(userObject, "name");
+	    userRequest.type = UserRequest::UserNameUpdate;
+	    boost::unique_lock<boost::mutex> lock(m_queueAccessMutex);
+	    m_requestQueue.push_back(userRequest);
+	    m_queueCondition.notify_one();
+	}
+	else
+	{
+	    std::stringbuf buffer("{ state: \"error\", errorMessage: \"Missing root user object\"}");
+	    request->setStatus(400);
+	    request->write(&buffer);
+	    return;
+	}
     }
 
 }
@@ -155,34 +161,36 @@ void UserHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerConte
 void UserHandler::QueueProcessingRoutine()
 {
     std::vector<UserRequest> queueCopy;
-    while (!m_isStoping) {
-        if (queueCopy.empty()) {
-            boost::unique_lock<boost::mutex> lock(m_conditionMutex);
-            if (m_requestQueue.empty())
-                m_queueCondition.wait(lock);
-            boost::unique_lock<boost::mutex> queueLock(m_queueAccessMutex);
-            queueCopy.swap(m_requestQueue);
-            if (queueCopy.empty())
-                continue;
-        }
-        stringmap online;
-        stringmap userNameUpdates;
-        for (std::vector<UserRequest>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i) {
-            UserRequest& request = *i;
-            switch (request.type)
-            {
-                case UserRequest::HeartBeat:
-                    online.insert(std::make_pair(request.userToken, TimeUtils::ToSqlString(boost::get<time_t>(request.value))));
-                    break;
-                case UserRequest::UserNameUpdate:
-                    userNameUpdates.insert(std::make_pair(request.userToken, boost::get<std::string>(request.value)));
-                    break;
-            }
-        }
+    while (!m_isStoping)
+    {
+	if (queueCopy.empty())
+	{
+	    boost::unique_lock<boost::mutex> lock(m_conditionMutex);
+	    if (m_requestQueue.empty())
+		m_queueCondition.wait(lock);
+	    boost::unique_lock<boost::mutex> queueLock(m_queueAccessMutex);
+	    queueCopy.swap(m_requestQueue);
+	    if (queueCopy.empty())
+		continue;
+	}
+	stringmap online;
+	stringmap userNameUpdates;
+	for (std::vector<UserRequest>::iterator i = queueCopy.begin(); i != queueCopy.end(); ++i)
+	{
+	    UserRequest& request = *i;
+	    switch (request.type) {
+	    case UserRequest::HeartBeat:
+		online.insert(std::make_pair(request.userToken, TimeUtils::ToSqlString(boost::get<time_t>(request.value))));
+		break;
+	    case UserRequest::UserNameUpdate:
+		userNameUpdates.insert(std::make_pair(request.userToken, boost::get<std::string>(request.value)));
+		break;
+	    }
+	}
 
-        m_pUserRepository->SetUsersOnline(online);
-        m_pUserRepository->SetUserNames(userNameUpdates);
-        queueCopy.clear();
+	m_pUserRepository->SetUsersOnline(online);
+	m_pUserRepository->SetUserNames(userNameUpdates);
+	queueCopy.clear();
 
 
     }

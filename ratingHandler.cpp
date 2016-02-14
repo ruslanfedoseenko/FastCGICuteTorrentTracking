@@ -10,6 +10,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 #include "FcgiHelper.h"
+
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
@@ -46,7 +47,7 @@ void RaitingHandler::AddRating(fastcgi::Request* request, fastcgi::HandlerContex
     if (!JsonUtils::ParseJson(doc, buffer))
     {
 	FcgiHelper::WriteParseError(request, doc.GetParseError());
-        return;
+	return;
     }
 
     if (doc.HasMember("rating"))

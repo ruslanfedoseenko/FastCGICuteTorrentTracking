@@ -13,6 +13,7 @@
 
 #ifndef VARIABLEEXTRACTOR_H
 #define VARIABLEEXTRACTOR_H
+
 template <class TVar>
 class VariableExtractor {
 public:

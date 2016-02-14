@@ -22,5 +22,5 @@ std::string TimeUtils::ToSqlString(time_t rawTime)
     strftime(buffer, 80, "%Y-%m-%d %I:%M:%S", timeinfo);
     std::string str(buffer);
     return str;
-	   
+
 }

@@ -19,7 +19,7 @@
 
 RaitingRepository::RaitingRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword) : BaseRepository(dbHost, dbUser, dbPassword)
 {
-    
+
 }
 
 void RaitingRepository::AddRatings(const std::vector<Rating>& ratings, boost::shared_ptr<RepositoryContext> context)
@@ -29,33 +29,34 @@ void RaitingRepository::AddRatings(const std::vector<Rating>& ratings, boost::sh
 	context = createContext();
     }
     boost::shared_ptr<sql::Connection> con = context->GetConnection();
-    
-     std::string query = "INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES ";
-     try{
-	    for (int i = 0; i < ratings.size(); i++)
-	    {
-		query.append("(?, ?, ?, ?, ?, ?) ,");
-	    }
-	    query.erase(query.length() - 1);
-	    int index = 1;
-	    boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement(query));
-	    for (std::vector<Rating>::const_iterator i = ratings.begin(); i != ratings.end(); ++i)
-	    {
-		Rating mark = *i;
-		statment->setString(index++, mark.uid);
-		statment->setDouble(index++, mark.speed);
-		statment->setDouble(index++, mark.design);
-		statment->setDouble(index++, mark.possibilities);
-		statment->setDouble(index++, mark.usability);
-		statment->setString(index++, mark.message);
 
-	    }
-	    statment->execute();
-	    
-	}
-	catch (sql::SQLException ex)
+    std::string query = "INSERT INTO `rating`(`uid`, `speed_mark`, `design_mark`, `possibilities_mark`, `usability_mark`, `custom_msg`) VALUES ";
+    try
+    {
+	for (int i = 0; i < ratings.size(); i++)
 	{
-	    std::cout << "sql::SQLException occured:" << ex.what() << std::endl;
+	    query.append("(?, ?, ?, ?, ?, ?) ,");
 	}
+	query.erase(query.length() - 1);
+	int index = 1;
+	boost::scoped_ptr<sql::PreparedStatement> statment(con->prepareStatement(query));
+	for (std::vector<Rating>::const_iterator i = ratings.begin(); i != ratings.end(); ++i)
+	{
+	    Rating mark = *i;
+	    statment->setString(index++, mark.uid);
+	    statment->setDouble(index++, mark.speed);
+	    statment->setDouble(index++, mark.design);
+	    statment->setDouble(index++, mark.possibilities);
+	    statment->setDouble(index++, mark.usability);
+	    statment->setString(index++, mark.message);
+
+	}
+	statment->execute();
+
+    }
+    catch (sql::SQLException ex)
+    {
+	std::cout << "sql::SQLException occured:" << ex.what() << std::endl;
+    }
 }
 

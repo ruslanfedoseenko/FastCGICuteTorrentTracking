@@ -17,7 +17,8 @@
 #include "BaseRepository.h"
 #include <boost/smart_ptr.hpp>
 #include <unordered_map>
-class UserRepository : BaseRepository{
+
+class UserRepository : BaseRepository {
 public:
     UserRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
     long GetOnlineUsersCount(boost::shared_ptr<RepositoryContext> context = nullptr);
@@ -27,7 +28,7 @@ public:
     std::string GetUserName(const std::string& userToken, boost::shared_ptr<RepositoryContext> context = nullptr);
     virtual ~UserRepository();
 private:
-    
+
 
 };
 

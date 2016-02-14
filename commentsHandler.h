@@ -17,18 +17,17 @@
 #include <boost/smart_ptr.hpp>
 #include <iostream>
 #include <sstream>
-#include <stlcache/stlcache.hpp>
-#include <stlcache/policy_adaptive.hpp>
 #include <rapidjson/document.h>
 #include "Comments.h"
+class NewUsersRepository;
 class CommentsRepository;
 class Subrouter;
-typedef stlcache::cache<std::string, rapidjson::Document*, stlcache::policy_adaptive> CacheAdaptive;
-class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
-   
+
+class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
     std::vector<Comment> queue_;
     boost::scoped_ptr<CommentsRepository> m_pCommentsRepository;
+    boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     boost::condition queueCondition_;
     boost::mutex queueMutex_;
     boost::mutex fdMutex_;
@@ -37,9 +36,7 @@ class CommentsHandler : virtual public fastcgi::Component, virtual public fastcg
     // Writing thread.
     boost::thread writingThread_;
     static void buildJson(rapidjson::Document* pt, std::vector<Comment>& comments);
-    static void AddChildComments(rapidjson::Value* comment, std::vector<Comment>* commentObjs, std::vector<int>* childComments, rapidjson::Document::AllocatorType& allocator);
     boost::scoped_ptr<Subrouter> m_pRouter;
-    CacheAdaptive commentsCache;
 public:
     CommentsHandler(fastcgi::ComponentContext *context);
     virtual void onLoad();
@@ -47,5 +44,6 @@ public:
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleGetCommentsRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleAddCommentRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void handleEditCommentsRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void QueueProcessingThread();
 };

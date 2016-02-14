@@ -15,8 +15,7 @@
 #include <fastcgi2/request.h>
 #include <boost/algorithm/string.hpp>
 
-
-HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Request*,fastcgi::HandlerContext*)> handler)
+HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Request*, fastcgi::HandlerContext*) > handler)
 {
     HandlerDescriptor* descriptor = new HandlerDescriptor;
     descriptor->Handler = handler;
@@ -26,26 +25,26 @@ HandlerDescriptor* Subrouter::RegisterHandler(boost::function<void(fastcgi::Requ
 
 bool Subrouter::HandleRequest(fastcgi::Request* request,  fastcgi::HandlerContext *handlerContext)
 {
-    for(std::vector<HandlerDescriptor*>::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i )
+    for (std::vector<HandlerDescriptor*>::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i )
     {
-        HandlerDescriptor* decriptor = *i;
-        std::list<boost::shared_ptr<RequestFilter>> filters = decriptor->Filters;
-        bool match = filters.size() > 0;
-        for (std::list<boost::shared_ptr<RequestFilter>>::const_iterator j = filters.begin(); j != filters.end(); ++j)
-        {
-            boost::shared_ptr<RequestFilter> filter = *j;
-            match = match && filter->check(request);
-            filter->fillVars(handlerContext);
-            if (!match)
-            {
-                break;
-            }
-        }
-        if (match)
-        {
-            decriptor->Handler(request, handlerContext);
-            return true;
-        }
+	HandlerDescriptor* decriptor = *i;
+	std::list<boost::shared_ptr < RequestFilter>> filters = decriptor->Filters;
+	bool match = filters.size() > 0;
+	for (std::list<boost::shared_ptr < RequestFilter>>::const_iterator j = filters.begin(); j != filters.end(); ++j)
+	{
+	    boost::shared_ptr<RequestFilter> filter = *j;
+	    match = match && filter->check(request);
+	    filter->fillVars(handlerContext);
+	    if (!match)
+	    {
+		break;
+	    }
+	}
+	if (match)
+	{
+	    decriptor->Handler(request, handlerContext);
+	    return true;
+	}
     }
     std::stringbuf buffer("{\"state\" : \"error\", \"errorString\" : \"No handler found.\"}");
     request->setStatus(400);
@@ -55,9 +54,9 @@ bool Subrouter::HandleRequest(fastcgi::Request* request,  fastcgi::HandlerContex
 
 Subrouter::~Subrouter()
 {
-    for(int i=0; i< m_rules.size(); i++)
+    for (int i=0; i < m_rules.size(); i++)
     {
-        delete m_rules[i];
+	delete m_rules[i];
     }
     m_rules.clear();
 }

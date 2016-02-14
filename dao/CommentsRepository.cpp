@@ -23,10 +23,13 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/thread/pthread/mutex.hpp>
 #include "CommentsRepository.h"
+#include "NewUsersRepository.h"
 #include <set>
-
+#include <HashUtils.h>
+#include <cppconn/datatype.h>
 CommentsRepository::CommentsRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
 : BaseRepository(dbHost, dbUser, dbPassword)
+, m_pAuthRepo(new NewUsersRepository(dbHost, dbUser, dbPassword))
 , m_commentsCache(1500)
 {
 
@@ -34,26 +37,32 @@ CommentsRepository::CommentsRepository(const std::string& dbHost, const std::str
 
 std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context)
 {
+
+    boost::mutex::scoped_lock lock(m_readMutex);
     std::cout << "CommentsRepository::GetComments " << infoHash << " " << page << std::endl;
     std::vector<Comment> comments;
+
     std::string cacheKey = infoHash;
     cacheKey.append(std::to_string(page));
-    if (m_commentsCache.check(cacheKey))
+    uint32_t crcCacheKey = HashUtils::CalculateCrc32(cacheKey);
+    std::cout << "looking cache entry with cacheKey " << cacheKey << std::endl;
+    if (m_commentsCache.count(crcCacheKey) > 0 && m_commentsCache.check(crcCacheKey))
     {
-	comments = m_commentsCache.fetch(cacheKey);
+	std::cout << "entry with cacheKey " << cacheKey << " found" << std::endl;
+	comments = m_commentsCache.fetch(crcCacheKey);
     }
     else
     {
-	boost::mutex::scoped_lock lock(m_readMutex);
+	std::cout << "entry with cacheKey " << cacheKey << " not found" << std::endl;
 	if (context == nullptr)
 	{
 	    context = createContext();
 	}
 	boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, tc1.`user_id`, tc1.`date`, tc1.`rating` FROM `torrent_coments` as tc1 WHERE `infohash`=? ORDER BY tc1.`date` LIMIT ?, ?"));
+	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, u.`username`, tc1.`added_date`, tc1.`updated_date`, tc1.`rating` FROM `torrent_coments` as tc1 LEFT JOIN `users` u ON u.id = tc1.`user_id` WHERE `infohash`=? ORDER BY tc1.`added_date` LIMIT ?, ?"));
 	getCommentsStatment->setString(1, infoHash);
 	getCommentsStatment->setInt(2, page * PAGE_SIZE);
-	getCommentsStatment->setInt(3, (page + 1) * PAGE_SIZE);
+	getCommentsStatment->setInt(3, PAGE_SIZE);
 	boost::scoped_ptr<sql::ResultSet> commentsResultSet(getCommentsStatment->executeQuery());
 	while (commentsResultSet->next())
 	{
@@ -61,18 +70,45 @@ std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int p
 	    comment.id = commentsResultSet->getInt("id");
 	    comment.infohash = commentsResultSet->getString("infohash");
 	    comment.comment = commentsResultSet->getString("comment_data");
-	    comment.userToken = commentsResultSet->getString("user_id");
-	    comment.comentTime = commentsResultSet->getString("date");
+	    comment.userToken = commentsResultSet->getString("username");
+	    comment.comentUpdateDateTime = commentsResultSet->getString("updated_date");
+	    comment.comentAddDateTime = commentsResultSet->getString("added_date");
 	    comment.rating = commentsResultSet->getDouble("rating");
 	    comments.push_back(comment);
 	}
 	if (comments.size() > 0)
-	    m_commentsCache.insert(cacheKey, comments);
+	{
+	    std::cout << "inserting cache entry with cacheKey " << cacheKey << std::endl;
+	    m_commentsCache.insert(crcCacheKey, comments);
+	}
     }
 
 
 
     return comments;
+}
+
+bool CommentsRepository::CheckCommentToken(std::string token, int comment_id, boost::shared_ptr<RepositoryContext> context)
+{
+    if (context == nullptr)
+    {
+	context = createContext();
+    }
+    bool isTokenAlive = m_pAuthRepo->CheckAlive(token, context);
+    if (!isTokenAlive)
+	return isTokenAlive;
+    boost::shared_ptr<sql::Connection> connection = context->GetConnection();
+    boost::scoped_ptr<sql::PreparedStatement> isValidTokenForIdStatement(connection->prepareStatement("SELECT (SELECT u.`id` FROM  `users` AS u LEFT JOIN auth_tokens AS at ON u.`token_id` = at.`id` WHERE at.`token` =  ?  LIMIT 1 ) = ( SELECT  `user_id` FROM  `torrent_coments` WHERE  `id` =? LIMIT 1)"));
+    isValidTokenForIdStatement->setString(1, token);
+    isValidTokenForIdStatement->setInt(2, comment_id);
+    boost::scoped_ptr<sql::ResultSet> isValidTokenForIdResultSet(isValidTokenForIdStatement->executeQuery());
+    bool valid;
+    while (isValidTokenForIdResultSet->next())
+    {
+	valid = isValidTokenForIdResultSet->getInt(1) > 0;
+    }
+
+    return valid;
 }
 
 int CommentsRepository::GetCommentsPageCount(std::string infoHash, boost::shared_ptr<RepositoryContext> context)
@@ -125,32 +161,49 @@ void CommentsRepository::AddComments(const std::vector<Comment>& comments, boost
 	{
 	    context = createContext();
 	}
+
 	boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-	std::string insertStatementSql = "INSERT INTO `torrent_coments` (`parent_comment_id`, `infohash`, `comment`, `uid`, `comment_date`, `rating`) VALUES ";
+	std::string insertStatementSql = "INSERT INTO `torrent_coments` (`id`, `infohash`, `comment_data`, `user_id`, `added_date`, `updated_date` , `rating`) VALUES ";
 	for (int i=0; i < comments.size(); i++)
 	{
-	    insertStatementSql.append("(?, ?, ?, ?, ?, ?) ,");
+	    insertStatementSql.append("(?, ?, ?, ?, ?, ?, ?) ,");
 	}
 	insertStatementSql.erase(insertStatementSql.length() - 1);
+	insertStatementSql.append(" ON DUPLICATE KEY UPDATE `comment_data` = VALUES(`comment_data`), updated_date = CURRENT_TIMESTAMP, `updated_date`=VALUES(`updated_date`), `rating`= VALUES(`rating`) ");
 	boost::scoped_ptr<sql::PreparedStatement> statment(connection->prepareStatement(insertStatementSql));
 	int index = 1;
+	
 	for (std::vector<Comment>::const_iterator i = comments.begin(); i != comments.end(); ++i)
 	{
 	    Comment comment = *i;
-	    if (comment.parentCommentId <= 0)
+	    int userId = m_pAuthRepo->GetUserIdByActiveToken(comment.userToken, context);
+	    if (userId > 0)
 	    {
-		statment->setNull(index++, sql::DataType::INTEGER);
+		if (comment.id == 0)
+		{
+		    statment->setNull(index++, sql::DataType::INTEGER);
+		}
+		else
+		{
+		    std::cout << "setting id in query " << comment.id << std::endl;
+		    statment->setInt(index++, comment.id);
+		}
+		cachesToInvalidate.insert(comment.infohash);
+		statment->setString(index++, comment.infohash);
+		statment->setString(index++, comment.comment);
+		statment->setInt(index++, userId);
+		statment->setDateTime(index++, comment.comentAddDateTime);
+		if (comment.comentUpdateDateTime.empty())
+		    statment->setNull(index++, sql::DataType::TIMESTAMP);
+		else
+		    statment->setDateTime(index++, comment.comentUpdateDateTime);
+		statment->setDouble(index++, comment.rating);
 	    }
 	    else
 	    {
-		statment->setInt(index++, comment.parentCommentId);
+		std::cout << "No user found for token " << comment.userToken;
 	    }
-	    cachesToInvalidate.insert(comment.infohash);
-	    statment->setString(index++, comment.infohash);
-	    statment->setString(index++, comment.comment);
-	    statment->setString(index++, comment.userToken);
-	    statment->setDateTime(index++, comment.comentTime);
-	    statment->setDouble(index++, comment.rating);
+
 	}
 	statment->execute();
     }
@@ -161,8 +214,9 @@ void CommentsRepository::AddComments(const std::vector<Comment>& comments, boost
 	for (int j = 0; j < pages; j++)
 	{
 	    std::string cacheKey = infoHash + std::to_string(j);
-	    if (m_commentsCache.check(cacheKey))
-		m_commentsCache.erase(cacheKey);
+	    uint32_t crcCacheKey = HashUtils::CalculateCrc32(cacheKey);
+	    if (m_commentsCache.check(crcCacheKey))
+		m_commentsCache.erase(crcCacheKey);
 	}
 
     }

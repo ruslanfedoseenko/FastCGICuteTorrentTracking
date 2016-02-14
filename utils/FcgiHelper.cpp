@@ -46,7 +46,7 @@ void FcgiHelper::WriteError(fastcgi::Request* request, int error_code, std::stri
     request->write(buffer.GetString(), buffer.GetSize());
 }
 
-void FcgiHelper::WriteJson(fastcgi::Request* request,const rapidjson::Document& doc)
+void FcgiHelper::WriteJson(fastcgi::Request* request, const rapidjson::Document& doc)
 {
     rapidjson::StringBuffer outputBuffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(outputBuffer);

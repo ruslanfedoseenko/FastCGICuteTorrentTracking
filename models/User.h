@@ -15,6 +15,11 @@
 #define USER_H
 
 struct User {
+    User()
+    {
+        id = 0;
+        lastSeen = 0;
+    }
     std::string userName, email, authToken, password;
     unsigned lastSeen, id;
 };

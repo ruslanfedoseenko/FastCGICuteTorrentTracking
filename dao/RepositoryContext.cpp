@@ -17,9 +17,9 @@
 #include "RepositoryContext.h"
 
 RepositoryContext::RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
-    : m_dbHost(dbHost)
-    , m_dbUser(dbUser)
-    , m_dbPassword(dbPassword)
+: m_dbHost(dbHost)
+, m_dbUser(dbUser)
+, m_dbPassword(dbPassword)
 {
 }
 
@@ -31,27 +31,28 @@ boost::shared_ptr<sql::Connection> RepositoryContext::GetConnection()
 	driver->threadInit();
 	m_dbConnection.reset(driver->connect(m_dbHost, m_dbUser, m_dbPassword));
 	m_dbConnection->setSchema("tracking_db");
-//        m_dbConnection->setAutoCommit(false);
-//        m_pSavePoint = m_dbConnection->setSavepoint();
-        
+	//        m_dbConnection->setAutoCommit(false);
+	//        m_pSavePoint = m_dbConnection->setSavepoint();
+
     }
     return m_dbConnection;
 }
+
 void RepositoryContext::rollback()
 {
     if (m_dbConnection != nullptr)
     {
-//        if (m_pSavePoint!= 0)
-//	{
-//            m_dbConnection->rollback(m_pSavePoint);
-//        }
+	//        if (m_pSavePoint!= 0)
+	//	{
+	//            m_dbConnection->rollback(m_pSavePoint);
+	//        }
     }
 }
 
 RepositoryContext::~RepositoryContext()
 {
-//    m_dbConnection->releaseSavepoint(m_pSavePoint);
-//    m_dbConnection->commit();
+    //    m_dbConnection->releaseSavepoint(m_pSavePoint);
+    //    m_dbConnection->commit();
     sql::Driver* driver = get_driver_instance();
     driver->threadEnd();
     m_dbConnection->close();

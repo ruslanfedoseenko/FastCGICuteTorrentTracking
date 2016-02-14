@@ -13,12 +13,13 @@
 
 #include "JsonUtils.h"
 #include <rapidjson/error/en.h>
-bool JsonUtils::ParseJson(rapidjson::Document& doc,fastcgi::DataBuffer& buffer)
+
+bool JsonUtils::ParseJson(rapidjson::Document& doc, fastcgi::DataBuffer& buffer)
 {
     std::string json;
     buffer.toString(json);
 
-    
+
 
     rapidjson::ParseResult ok = doc.Parse(json.c_str());
     if (ok.IsError())
@@ -26,7 +27,7 @@ bool JsonUtils::ParseJson(rapidjson::Document& doc,fastcgi::DataBuffer& buffer)
     return !ok.IsError();
 }
 
-bool JsonUtils::CreateError(rapidjson::Document& document, int err,const std::string& message)
+bool JsonUtils::CreateError(rapidjson::Document& document, int err, const std::string& message)
 {
     rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
     document.SetObject();
@@ -34,47 +35,49 @@ bool JsonUtils::CreateError(rapidjson::Document& document, int err,const std::st
     document.AddMember("message", rapidjson::Value(message.c_str(), allocator), allocator);
 }
 
-
-
 template <>
 int JsonUtils::GetValue<int>(const rapidjson::Value& value, const char* path)
 {
     const rapidjson::Value& subValue = value[path];
     if (subValue.IsInt())
-        return subValue.GetInt();
+	return subValue.GetInt();
     else
-    {  if (subValue.IsString())
-            return boost::lexical_cast<int>(subValue.GetString());
-        else {
-            return -1;
-        }
+    {
+	if (subValue.IsString())
+	    return boost::lexical_cast<int>(subValue.GetString());
+	else
+	{
+	    return -1;
+	}
     }
 }
-
 
 template <>
 std::string JsonUtils::GetValue<std::string>(const rapidjson::Value& value, const char* path)
 {
     const rapidjson::Value& subValue = value[path];
     if (subValue.IsString())
-        return subValue.GetString();
+	return subValue.GetString();
     else
-    {  
+    {
 	return "";
     }
 }
+
 template <>
 double JsonUtils::GetValue<double>(const rapidjson::Value& value, const char* path)
 {
     const rapidjson::Value& subValue = value[path];
     if (subValue.IsDouble())
-        return subValue.GetDouble();
+	return subValue.GetDouble();
     else
-    {  if (subValue.IsString())
-            return boost::lexical_cast<double>(subValue.GetString());
-        else {
-            return -1.0;
-        }
+    {
+	if (subValue.IsString())
+	    return boost::lexical_cast<double>(subValue.GetString());
+	else
+	{
+	    return -1.0;
+	}
     }
 }
 

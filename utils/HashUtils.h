@@ -5,22 +5,22 @@
  */
 
 /* 
- * File:   TimeUtils.h
+ * File:   HashUtils.h
  * Author: Ruslan
  *
- * Created on January 9, 2016, 6:38 PM
+ * Created on February 14, 2016, 7:31 PM
  */
 
-#ifndef TIMEUTILS_H
-#define TIMEUTILS_H
+#ifndef HASHUTILS_H
+#define HASHUTILS_H
+#include <boost/cstdint.hpp>
 #include <string>
-
-class TimeUtils {
+class HashUtils {
 public:
-    static std::string ToSqlString(time_t time);
+    static uint32_t CalculateCrc32(const std::string& data);
 private:
 
 };
 
-#endif /* TIMEUTILS_H */
+#endif /* HASHUTILS_H */
 

@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include "onlineHandler.h"
 #include <boost/bind.hpp>
+
 OnlineHandler::OnlineHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
@@ -16,8 +17,9 @@ void OnlineHandler::onLoad()
 {
     const std::string loggerComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/logger");
     m_logger = context()->findComponent<fastcgi::Logger>(loggerComponentName);
-    if (!m_logger) {
-        throw std::runtime_error("cannot get component " + loggerComponentName);
+    if (!m_logger)
+    {
+	throw std::runtime_error("cannot get component " + loggerComponentName);
     }
     m_logger->info("test log");
     std::cout << "OnlineHandler::onLoad" << std::endl;
@@ -36,7 +38,7 @@ void OnlineHandler::onUnload()
     writingThread_.join();
 }
 
-void OnlineHandler::handleOnlineUpdate(fastcgi::Request *request,fastcgi::HandlerContext *handlerContext)
+void OnlineHandler::handleOnlineUpdate(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     std::string uid = request->getArg("uid");
 
@@ -54,32 +56,36 @@ void OnlineHandler::handleOnlineUpdate(fastcgi::Request *request,fastcgi::Handle
 void OnlineHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)
 {
     request->setContentType("application/json");
-    m_router->HandleRequest(request,handlerContext);
+    m_router->HandleRequest(request, handlerContext);
 
 }
 
 void OnlineHandler::QueueProcessingThread()
 {
-    while (!stopping_) {
-        std::vector<std::string> queueCopy;
-        if (queueCopy.empty()) {
-            std::cout << "Before lock QueueProcessingThread" << std::endl;
-            boost::mutex::scoped_lock lock(queueMutex_);
-            std::cout << "Waiting for new items..." << std::endl;
-            queueCondition_.wait(lock);
-            std::swap(queueCopy, queue_);
-            if (queueCopy.empty())
-                continue;
-            std::cout << "After lock QueueProcessingThread" << std::endl;
-        }
+    while (!stopping_)
+    {
+	std::vector<std::string> queueCopy;
+	if (queueCopy.empty())
+	{
+	    std::cout << "Before lock QueueProcessingThread" << std::endl;
+	    boost::mutex::scoped_lock lock(queueMutex_);
+	    std::cout << "Waiting for new items..." << std::endl;
+	    queueCondition_.wait(lock);
+	    std::swap(queueCopy, queue_);
+	    if (queueCopy.empty())
+		continue;
+	    std::cout << "After lock QueueProcessingThread" << std::endl;
+	}
 
 
-        try {
-            m_pUserRepository->SetUsersOnline(queueCopy);
-            queueCopy.clear();
-        }
-        catch (sql::SQLException ex) {
-            std::cout << "sql::SQLException occured:" << ex.what() << ex.getSQLState() << std::endl;
-        }
+	try
+	{
+	    m_pUserRepository->SetUsersOnline(queueCopy);
+	    queueCopy.clear();
+	}
+	catch (sql::SQLException ex)
+	{
+	    std::cout << "sql::SQLException occured:" << ex.what() << ex.getSQLState() << std::endl;
+	}
     }
 }

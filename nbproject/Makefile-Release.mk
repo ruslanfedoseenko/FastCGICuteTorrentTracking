@@ -49,18 +49,23 @@ OBJECTFILES= \
 	${OBJECTDIR}/registerHandler.o \
 	${OBJECTDIR}/userHandler.o \
 	${OBJECTDIR}/utils/FcgiHelper.o \
+	${OBJECTDIR}/utils/HashUtils.o \
 	${OBJECTDIR}/utils/Subrouter.o \
 	${OBJECTDIR}/utils/TimeUtils.o \
 	${OBJECTDIR}/utils/fastcgi2/RequestFilters.o \
-	${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o
+	${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o \
+	${OBJECTDIR}/utils/mail/CSmtp.o \
+	${OBJECTDIR}/utils/mail/base64.o \
+	${OBJECTDIR}/utils/mail/main.o \
+	${OBJECTDIR}/utils/mail/md5.o
 
 
 # C Compiler Flags
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-fpermissive
-CXXFLAGS=-fpermissive
+CCFLAGS=-O2
+CXXFLAGS=-O2
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -149,6 +154,11 @@ ${OBJECTDIR}/utils/FcgiHelper.o: utils/FcgiHelper.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/FcgiHelper.o utils/FcgiHelper.cpp
 
+${OBJECTDIR}/utils/HashUtils.o: utils/HashUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/HashUtils.o utils/HashUtils.cpp
+
 ${OBJECTDIR}/utils/Subrouter.o: utils/Subrouter.cpp 
 	${MKDIR} -p ${OBJECTDIR}/utils
 	${RM} "$@.d"
@@ -168,6 +178,26 @@ ${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o: utils/fastcgi2/VariableExtracto
 	${MKDIR} -p ${OBJECTDIR}/utils/fastcgi2
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/fastcgi2/VariableExtractor.o utils/fastcgi2/VariableExtractor.cpp
+
+${OBJECTDIR}/utils/mail/CSmtp.o: utils/mail/CSmtp.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/mail
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/mail/CSmtp.o utils/mail/CSmtp.cpp
+
+${OBJECTDIR}/utils/mail/base64.o: utils/mail/base64.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/mail
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/mail/base64.o utils/mail/base64.cpp
+
+${OBJECTDIR}/utils/mail/main.o: utils/mail/main.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/mail
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/mail/main.o utils/mail/main.cpp
+
+${OBJECTDIR}/utils/mail/md5.o: utils/mail/md5.cpp 
+	${MKDIR} -p ${OBJECTDIR}/utils/mail
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utils/mail/md5.o utils/mail/md5.cpp
 
 # Subprojects
 .build-subprojects:

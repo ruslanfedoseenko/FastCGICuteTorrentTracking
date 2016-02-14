@@ -19,8 +19,8 @@
 #include <sstream>
 #include "dao/UserRepository.h"
 #include "utils/Subrouter.h"
-class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler 
-{
+
+class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
     std::vector<std::string> queue_;
     boost::condition queueCondition_;
     boost::mutex queueMutex_;

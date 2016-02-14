@@ -22,7 +22,7 @@
 class JsonUtils {
 public:
     static bool ParseJson(rapidjson::Document& document, fastcgi::DataBuffer& buffer);
-    static bool CreateError(rapidjson::Document& document, int err,const std::string & message);
+    static bool CreateError(rapidjson::Document& document, int err, const std::string & message);
     template <class T> static T GetValue(const rapidjson::Value& document, const char* path);
 private:
 
