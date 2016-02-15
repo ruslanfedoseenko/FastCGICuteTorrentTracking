@@ -16,7 +16,9 @@
 #include <fastcgi2/component.h>
 #include <fastcgi2/handler.h>
 #include <fastcgi2/request.h>
-
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 #include <boost/smart_ptr.hpp>
 namespace fastcgi {
     class Logger;
@@ -35,6 +37,10 @@ public:
     void handleAuthKeepAliveRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleCheckMailRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
 private:
+    void QueueMailProcessing();
+    bool m_isStoping;
+    boost::condition m_queueCondition;
+    //std::vector<Comment> queue_;
     boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     fastcgi::Logger* m_logger;
     boost::scoped_ptr<Subrouter> m_router;

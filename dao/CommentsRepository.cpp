@@ -27,12 +27,19 @@
 #include <set>
 #include <HashUtils.h>
 #include <cppconn/datatype.h>
-CommentsRepository::CommentsRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
-: BaseRepository(dbHost, dbUser, dbPassword)
-, m_pAuthRepo(new NewUsersRepository(dbHost, dbUser, dbPassword))
+#include <fastcgi2/component.h>
+#include <fastcgi2/config.h>
+CommentsRepository::CommentsRepository(fastcgi::ComponentContext* componentContext)
+: BaseRepository()
+, fastcgi::Component(componentContext)
+, m_pAuthRepo(new NewUsersRepository(getDbHost(), getDbUser(), getDbPassword()))
 , m_commentsCache(1500)
 {
-
+    std::string rootXPath = context()->getComponentXPath();
+    setDbHost(context()->getConfig()->asString(rootXPath + "/mysqlhost"));
+    setDbName(context()->getConfig()->asString(rootXPath + "/mysqldbname"));
+    setDbUser(context()->getConfig()->asString(rootXPath + "/mysqluser"));
+    setDbPassword(context()->getConfig()->asString(rootXPath + "/mysqlpass"));
 }
 
 std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context)

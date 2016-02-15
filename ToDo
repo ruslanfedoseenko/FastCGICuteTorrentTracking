@@ -1,0 +1,3 @@
+make repositories as fastcgi::Component;
+implement mailer componet as fastcgi::Component;
+implement dbConnectionPool as fastcgi::Component;

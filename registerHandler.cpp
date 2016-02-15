@@ -16,7 +16,6 @@
 #include "NewUsersRepository.h"
 #include <fastcgi2/config.h>
 #include <fastcgi2/logger.h>
-#include <boost/bind.hpp>
 #include <rapidjson/document.h>
 #include <rapidjson/allocators.h>
 #include "User.h"
@@ -26,7 +25,8 @@
 #include <boost/format.hpp>
 #include <cppconn/exception.h>
 #include <boost/thread/detail/thread.hpp>
-
+#include <boost/thread/pthread/condition_variable.hpp>
+#include <boost/bind.hpp>
 RegisterHandler::RegisterHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
@@ -58,11 +58,19 @@ void RegisterHandler::onLoad()
     std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
     std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
     m_pAuthRepo.reset(new NewUsersRepository(mysql_host, mysql_user, mysql_pass));
-    //m_queueProcessingThread = boost::thread();
+    m_queueProcessingThread = boost::thread(boost::bind(&RegisterHandler::QueueMailProcessing, this));
+}
+
+void RegisterHandler::QueueMailProcessing()
+{
+    std::vector<int> temp(22);
 }
 
 void RegisterHandler::onUnload()
 {
+    m_isStoping = true;
+    m_queueCondition.notify_all();
+    m_queueProcessingThread.join();
 }
 
 void RegisterHandler::handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext)

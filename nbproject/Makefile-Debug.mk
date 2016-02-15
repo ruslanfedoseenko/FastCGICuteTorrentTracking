@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/commentsHandler.o \
+	${OBJECTDIR}/core/Components/Mailer.o \
 	${OBJECTDIR}/dao/BaseRepository.o \
 	${OBJECTDIR}/dao/CommentsRepository.o \
 	${OBJECTDIR}/dao/JsonUtils.o \
@@ -74,7 +75,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem
+LDLIBSOPTIONS=-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lssl -lcrypto
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -88,6 +89,11 @@ ${OBJECTDIR}/commentsHandler.o: commentsHandler.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -s -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commentsHandler.o commentsHandler.cpp
+
+${OBJECTDIR}/core/Components/Mailer.o: core/Components/Mailer.cpp 
+	${MKDIR} -p ${OBJECTDIR}/core/Components
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -s -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/core/Components/Mailer.o core/Components/Mailer.cpp
 
 ${OBJECTDIR}/dao/BaseRepository.o: dao/BaseRepository.cpp 
 	${MKDIR} -p ${OBJECTDIR}/dao

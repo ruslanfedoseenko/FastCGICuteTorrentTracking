@@ -22,12 +22,16 @@
 #include <string>
 #include "RepositoryContext.h"
 #include "BaseRepository.h"
+#include <fastcgi2/component.h>
+namespace fastcgi{
+    class ComponentContext;
+}
 #define PAGE_SIZE 30
 class NewUsersRepository;
-class CommentsRepository : BaseRepository {
+class CommentsRepository : BaseRepository, public fastcgi::Component {
     typedef stlcache::cache<uint32_t, std::vector<Comment>, stlcache::policy_adaptive> CacheAdaptive;
 public:
-    CommentsRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    CommentsRepository(fastcgi::ComponentContext* componentContext);
     std::vector<Comment> GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context = nullptr);
     int GetCommentsPageCount(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);
     float GetCommentsAvarageRating(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);

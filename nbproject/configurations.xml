@@ -2,6 +2,13 @@
 <configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="SourceFiles" displayName="src" projectFiles="true">
+      <logicalFolder name="f4" displayName="core" projectFiles="true">
+        <logicalFolder name="f1" displayName="Components" projectFiles="true">
+          <itemPath>core/Components/Mailer.cpp</itemPath>
+          <itemPath>core/Components/Mailer.h</itemPath>
+        </logicalFolder>
+        <itemPath>core/Singleton.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="dao" projectFiles="true">
         <itemPath>dao/BaseRepository.cpp</itemPath>
         <itemPath>dao/BaseRepository.h</itemPath>
@@ -63,6 +70,7 @@
         <itemPath>utils/TimeUtils.cpp</itemPath>
         <itemPath>utils/TimeUtils.h</itemPath>
       </logicalFolder>
+      <itemPath>ToDo</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -102,13 +110,21 @@
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}</output>
           <linkerLibItems>
-            <linkerOptionItem>-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem</linkerOptionItem>
+            <linkerOptionItem>-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lssl -lcrypto</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="ToDo" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="commentsHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="commentsHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="core/Components/Mailer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="core/Components/Mailer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="core/Singleton.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dao/BaseRepository.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -242,7 +258,7 @@
           <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}</output>
           <commandlineTool>g++</commandlineTool>
           <linkerLibItems>
-            <linkerOptionItem>-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem</linkerOptionItem>
+            <linkerOptionItem>-lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lfastcgi-daemon2 -lmysqlcppconn -lmysqlcppconn-static -lboost_system -lboost_filesystem -lssl -lcrypto</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -266,9 +282,17 @@
           <packInfoListElem name="Description" value="..." mandatory="false"/>
         </packInfoList>
       </packaging>
+      <item path="ToDo" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="commentsHandler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="commentsHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="core/Components/Mailer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="core/Components/Mailer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="core/Singleton.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dao/BaseRepository.cpp" ex="false" tool="1" flavor2="0">
       </item>

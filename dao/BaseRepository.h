@@ -18,10 +18,46 @@
 
 class BaseRepository {
 public:
+
+    
     BaseRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    BaseRepository() {};
     virtual ~BaseRepository();
+protected:
+    std::string getDbHost() const {
+        return m_dbHost;
+    }
+
+    void setDbHost(std::string dbHost) {
+        m_dbHost = dbHost;
+    }
+
+    std::string getDbName() const {
+        return m_dbName;
+    }
+
+    void setDbName(std::string dbName) {
+        m_dbName = dbName;
+    }
+
+    std::string getDbPassword() const {
+        return m_dbPassword;
+    }
+
+    void setDbPassword(std::string dbPassword) {
+        m_dbPassword = dbPassword;
+    }
+
+    std::string getDbUser() const {
+        return m_dbUser;
+    }
+
+    void setDbUser(std::string dbUser) {
+        m_dbUser = dbUser;
+    }
+
 private:
-    std::string m_dbHost, m_dbUser, m_dbPassword;
+    std::string m_dbHost, m_dbUser, m_dbPassword, m_dbName;
 protected:
     boost::shared_ptr<RepositoryContext> createContext();
 
