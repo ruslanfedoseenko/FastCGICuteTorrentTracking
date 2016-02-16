@@ -21,12 +21,12 @@ namespace sql {
 
 class RepositoryContext {
 public:
-    RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    RepositoryContext(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword, const std::string& dbName);
     boost::shared_ptr<sql::Connection> GetConnection();
     void rollback();
     virtual ~RepositoryContext();
 private:
-    std::string m_dbHost, m_dbUser, m_dbPassword;
+    std::string m_dbHost, m_dbUser, m_dbPassword, m_dbName;
     sql::Savepoint* m_pSavePoint;
     boost::shared_ptr<sql::Connection> m_dbConnection;
 };

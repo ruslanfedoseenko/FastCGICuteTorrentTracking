@@ -17,10 +17,12 @@
 #include "BaseRepository.h"
 #include <boost/smart_ptr.hpp>
 #include <unordered_map>
-
-class UserRepository : BaseRepository {
+#include <fastcgi2/component.h>
+class UserRepository : BaseRepository, public fastcgi::Component {
 public:
-    UserRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    UserRepository(fastcgi::ComponentContext*);
+    void onLoad() {}
+    void onUnload() {}
     long GetOnlineUsersCount(boost::shared_ptr<RepositoryContext> context = nullptr);
     void SetUsersOnline(const std::vector<std::string>& userTokens, boost::shared_ptr<RepositoryContext> context = nullptr);
     void SetUsersOnline(const std::unordered_map<std::string, std::string> userTokens, boost::shared_ptr<RepositoryContext> context = nullptr);

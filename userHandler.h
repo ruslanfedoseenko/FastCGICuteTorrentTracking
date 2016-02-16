@@ -37,7 +37,7 @@ public:
     void UpdateUserName(fastcgi::Request* request, fastcgi::HandlerContext *handlerContext);
 private:
     std::vector<UserRequest> m_requestQueue;
-    boost::scoped_ptr<UserRepository> m_pUserRepository;
+    UserRepository* m_pUserRepository;
     boost::scoped_ptr<Subrouter> m_router;
     bool m_isStoping;
     boost::mutex m_queueAccessMutex, m_conditionMutex;

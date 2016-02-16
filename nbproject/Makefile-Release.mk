@@ -130,6 +130,10 @@ ${OBJECTDIR}/dao/UserRepository.o: dao/UserRepository.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -Idao -Imodels -Iutils -Iutils/fastcgi2 -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dao/UserRepository.o dao/UserRepository.cpp
 
+: libtrackingfcgi.conf 
+	@echo Performing Custom Build Step
+	cp ${BUILD_SUBPROJECTS}/libtrackingfcgi.conf /etc/fastcgi2/avaliable/
+
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -212,6 +216,7 @@ ${OBJECTDIR}/utils/mail/md5.o: utils/mail/md5.cpp
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
 	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libTrackingFastCGI.${CND_DLIB_EXT}
+	${RM} 
 
 # Subprojects
 .clean-subprojects:

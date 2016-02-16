@@ -1,3 +1,5 @@
 make repositories as fastcgi::Component;
+remove BaseRepository Ctor with db data as args
 implement mailer componet as fastcgi::Component;
 implement dbConnectionPool as fastcgi::Component;
+

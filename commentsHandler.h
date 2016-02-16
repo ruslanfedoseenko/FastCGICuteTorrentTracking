@@ -26,8 +26,8 @@ class Subrouter;
 
 class CommentsHandler : virtual public fastcgi::Component, virtual public fastcgi::Handler {
     std::vector<Comment> queue_;
-    boost::scoped_ptr<CommentsRepository> m_pCommentsRepository;
-    boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
+    CommentsRepository* m_pCommentsRepository;
+    NewUsersRepository* m_pAuthRepo;
     boost::condition queueCondition_;
     boost::mutex queueMutex_;
     boost::mutex fdMutex_;

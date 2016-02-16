@@ -14,6 +14,7 @@
 RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
+, m_pRatingRepo(nullptr)
 {
     HandlerDescriptor* addHandlerDescriptor = m_router->RegisterHandler(boost::bind(&RaitingHandler::AddRating, this, _1, _2));
     addHandlerDescriptor->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("POST")));
@@ -24,10 +25,8 @@ RaitingHandler::RaitingHandler(fastcgi::ComponentContext *context)
 void RaitingHandler::onLoad()
 {
     std::cout << "RaitingHandler::onLoad" << std::endl;
-    mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
-    mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
-    mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
-    m_pRatingRepo.reset(new RaitingRepository(mysql_host, mysql_user, mysql_pass));
+    std::string ratingRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/rating-repo");
+    m_pRatingRepo = context()->findComponent<RaitingRepository>(ratingRepoComponentName);
     writingThread_ = boost::thread(boost::bind(&RaitingHandler::QueueProcessingThread, this));
 }
 

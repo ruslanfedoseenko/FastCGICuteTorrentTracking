@@ -17,10 +17,16 @@
 #include <cppconn/exception.h>
 #include <cppconn/driver.h>
 #include <vector>
-
-UserRepository::UserRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword)
-: BaseRepository(dbHost, dbUser, dbPassword)
+#include <fastcgi2/config.h>
+UserRepository::UserRepository(fastcgi::ComponentContext* componentContext)
+: BaseRepository()
+, fastcgi::Component(componentContext)
 {
+    std::string rootXPath = context()->getComponentXPath();
+    setDbHost(context()->getConfig()->asString(rootXPath + "/mysqlhost"));
+    setDbName(context()->getConfig()->asString(rootXPath + "/mysqldbname"));
+    setDbUser(context()->getConfig()->asString(rootXPath + "/mysqluser"));
+    setDbPassword(context()->getConfig()->asString(rootXPath + "/mysqlpass"));
 }
 
 long UserRepository::GetOnlineUsersCount(boost::shared_ptr<RepositoryContext> context)

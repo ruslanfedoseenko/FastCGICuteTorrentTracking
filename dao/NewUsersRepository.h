@@ -16,10 +16,12 @@
 
 #include "BaseRepository.h"
 #include "User.h"
-
-class NewUsersRepository : public BaseRepository {
+#include <fastcgi2/component.h>
+class NewUsersRepository : public BaseRepository, public fastcgi::Component {
 public:
-    NewUsersRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    NewUsersRepository(fastcgi::ComponentContext* componentContext);
+    void onLoad() {}
+    void onUnload() {}
     std::string AddUser(const User& user, boost::shared_ptr<RepositoryContext> context = nullptr);
     User GetUser(const unsigned& userId, boost::shared_ptr<RepositoryContext> context = nullptr);
     // Return non empty auth token on success

@@ -16,10 +16,12 @@
 
 #include "BaseRepository.h"
 #include "Rating.h"
-
-class RaitingRepository : public BaseRepository {
+#include <fastcgi2/component.h>
+class RaitingRepository : public BaseRepository, public fastcgi::Component {
 public:
-    RaitingRepository(const std::string& dbHost, const std::string& dbUser, const std::string& dbPassword);
+    RaitingRepository(fastcgi::ComponentContext* context);
+    void onLoad() {}
+    void onUnload() {}
     void AddRatings(const std::vector<Rating>& ratings, boost::shared_ptr<RepositoryContext> context = nullptr);
 private:
 

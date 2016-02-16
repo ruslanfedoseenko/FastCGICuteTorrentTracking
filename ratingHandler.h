@@ -36,7 +36,7 @@ class RaitingHandler : virtual public fastcgi::Component, virtual public fastcgi
     bool stopping_;
     // Writing thread.
     boost::thread writingThread_;
-    boost::scoped_ptr<RaitingRepository> m_pRatingRepo;
+    RaitingRepository* m_pRatingRepo;
     boost::scoped_ptr<Subrouter> m_router;
 public:
     RaitingHandler(fastcgi::ComponentContext *context);

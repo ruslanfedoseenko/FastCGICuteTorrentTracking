@@ -54,10 +54,8 @@ void RegisterHandler::onLoad()
     {
 	throw std::runtime_error("cannot get component " + loggerComponentName);
     }
-    std::string mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
-    std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
-    std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
-    m_pAuthRepo.reset(new NewUsersRepository(mysql_host, mysql_user, mysql_pass));
+    std::string authRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/user-auth-repo");
+    m_pAuthRepo = context()->findComponent<NewUsersRepository>(authRepoComponentName);
     m_queueProcessingThread = boost::thread(boost::bind(&RegisterHandler::QueueMailProcessing, this));
 }
 

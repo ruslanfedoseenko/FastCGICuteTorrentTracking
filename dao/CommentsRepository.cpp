@@ -32,7 +32,7 @@
 CommentsRepository::CommentsRepository(fastcgi::ComponentContext* componentContext)
 : BaseRepository()
 , fastcgi::Component(componentContext)
-, m_pAuthRepo(new NewUsersRepository(getDbHost(), getDbUser(), getDbPassword()))
+, m_pAuthRepo(nullptr)
 , m_commentsCache(1500)
 {
     std::string rootXPath = context()->getComponentXPath();
@@ -40,8 +40,19 @@ CommentsRepository::CommentsRepository(fastcgi::ComponentContext* componentConte
     setDbName(context()->getConfig()->asString(rootXPath + "/mysqldbname"));
     setDbUser(context()->getConfig()->asString(rootXPath + "/mysqluser"));
     setDbPassword(context()->getConfig()->asString(rootXPath + "/mysqlpass"));
+    std::string userAuthRepoName = context()->getConfig()->asString(rootXPath + "/user-auth-repo");
+    m_pAuthRepo.reset(context()->findComponent<NewUsersRepository>(userAuthRepoName));
 }
 
+void CommentsRepository::onLoad()
+{
+    
+}
+
+void CommentsRepository::onUnload()
+{
+    
+}
 std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context)
 {
 

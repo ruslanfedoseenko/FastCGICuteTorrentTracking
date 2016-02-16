@@ -25,8 +25,9 @@ using namespace boost::filesystem;
 
 CommentsHandler::CommentsHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
-, m_pCommentsRepository(NULL)
 , m_pRouter(new Subrouter)
+, m_pCommentsRepository(nullptr)
+, m_pAuthRepo(nullptr)   
 {
     HandlerDescriptor* addCommentsHandler = m_pRouter->RegisterHandler(boost::bind(&CommentsHandler::handleAddCommentRequest, this, _1, _2));
     addCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comments/(?<infohash>[a-fA-F0-9]{40})/")));
@@ -45,11 +46,10 @@ CommentsHandler::CommentsHandler(fastcgi::ComponentContext *context)
 void CommentsHandler::onLoad()
 {
     std::cout << "CommentsHandler::onLoad" << std::endl;
-    mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
-    mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
-    mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
-    m_pCommentsRepository.reset(new CommentsRepository(mysql_host, mysql_user, mysql_pass));
-    m_pAuthRepo.reset(new NewUsersRepository(mysql_host, mysql_user, mysql_pass));
+    std::string comentRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/comments-repository");
+    m_pCommentsRepository = context()->findComponent<CommentsRepository>(comentRepoComponentName);
+    std::string authRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/user-auth-repo");
+    m_pAuthRepo = context()->findComponent<NewUsersRepository>(authRepoComponentName);
     writingThread_ = boost::thread(boost::bind(&CommentsHandler::QueueProcessingThread, this));
 }
 

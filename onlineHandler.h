@@ -30,7 +30,7 @@ class OnlineHandler : virtual public fastcgi::Component, virtual public fastcgi:
     // Writing thread.
     fastcgi::Logger* m_logger;
     boost::thread writingThread_;
-    boost::scoped_ptr<UserRepository> m_pUserRepository;
+    UserRepository* m_pUserRepository;
     boost::scoped_ptr<Subrouter> m_router;
 public:
     OnlineHandler(fastcgi::ComponentContext *context);

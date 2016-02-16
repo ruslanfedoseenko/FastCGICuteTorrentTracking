@@ -71,6 +71,7 @@
         <itemPath>utils/TimeUtils.h</itemPath>
       </logicalFolder>
       <itemPath>ToDo</itemPath>
+      <itemPath>libtrackingfcgi.conf</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -155,6 +156,8 @@
       <item path="dao/UserRepository.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dao/UserRequest.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrackingfcgi.conf" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -323,6 +326,11 @@
       <item path="dao/UserRepository.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dao/UserRequest.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrackingfcgi.conf" ex="false" tool="3" flavor2="0">
+        <customTool>
+          <customToolCommandline>cp ${BUILD_SUBPROJECTS}/libtrackingfcgi.conf /etc/fastcgi2/avaliable/</customToolCommandline>
+        </customTool>
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>

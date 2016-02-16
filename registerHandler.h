@@ -41,7 +41,7 @@ private:
     bool m_isStoping;
     boost::condition m_queueCondition;
     //std::vector<Comment> queue_;
-    boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
+    NewUsersRepository* m_pAuthRepo;
     fastcgi::Logger* m_logger;
     boost::scoped_ptr<Subrouter> m_router;
     boost::thread m_queueProcessingThread;

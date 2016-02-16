@@ -44,6 +44,7 @@ using namespace boost::filesystem;
 UserHandler::UserHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
+, m_pUserRepository(nullptr)
 {
     HandlerDescriptor* getOnlineHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetOnlineCount, this, _1, _2));
     getOnlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/")));
@@ -62,10 +63,8 @@ UserHandler::UserHandler(fastcgi::ComponentContext *context)
 
 void UserHandler::onLoad()
 {
-    std::string mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
-    std::string mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
-    std::string mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
-    m_pUserRepository.reset(new UserRepository(mysql_host, mysql_user, mysql_pass));
+    std::string userRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/user-repo");
+    m_pUserRepository = context()->findComponent<UserRepository>(userRepoComponentName);
     m_queueProcessingThread = boost::thread(boost::bind(&UserHandler::QueueProcessingRoutine, this));
 }
 

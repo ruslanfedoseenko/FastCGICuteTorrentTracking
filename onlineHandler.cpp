@@ -2,10 +2,11 @@
 #include <boost/algorithm/string/join.hpp>
 #include "onlineHandler.h"
 #include <boost/bind.hpp>
-
+#include "UserRepository.h"
 OnlineHandler::OnlineHandler(fastcgi::ComponentContext *context)
 : fastcgi::Component(context)
 , m_router(new Subrouter)
+, m_pUserRepository(nullptr)
 {
     HandlerDescriptor* onlineHandler = m_router->RegisterHandler(boost::bind(&OnlineHandler::handleOnlineUpdate, this, _1, _2));
     onlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/tracking/online")));
@@ -23,10 +24,8 @@ void OnlineHandler::onLoad()
     }
     m_logger->info("test log");
     std::cout << "OnlineHandler::onLoad" << std::endl;
-    mysql_host = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlhost");
-    mysql_user = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqluser");
-    mysql_pass = context()->getConfig()->asString(context()->getComponentXPath() + "/mysqlpass");
-    m_pUserRepository.reset(new UserRepository(mysql_host, mysql_user, mysql_pass));
+    std::string userRepoComponentName = context()->getConfig()->asString(context()->getComponentXPath() + "/user-repo");
+    m_pUserRepository = context()->findComponent<UserRepository>(userRepoComponentName);
     writingThread_ = boost::thread(boost::bind(&OnlineHandler::QueueProcessingThread, this));
 }
 
