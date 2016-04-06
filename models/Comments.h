@@ -21,8 +21,10 @@ struct Comment {
     {
         id = 0;
         rating = 0.0f;
+        canEdit = false;
     }
     int id;
+    bool canEdit;
     std::string comment, infohash, userToken, comentAddDateTime, comentUpdateDateTime;
     float rating;
 };

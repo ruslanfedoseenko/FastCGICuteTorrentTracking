@@ -75,6 +75,7 @@ RegexFilter::check(const std::string &value)
 	{
 	    std::string name = *it;
 	    std::string value = what[*it].str();
+	    std::cout << "Match name: " << name << " Value: " << value << std::endl;
 	    vraibles.insert({name, value});
 	}
     }
@@ -177,8 +178,13 @@ RefererFilter::check(const fastcgi::Request *request)
 }
 
 ParamFilter::ParamFilter(const std::string &name, const std::string &regex) :
-name_(name), regex_(regex)
+name_(name), regex_(regex), m_isRequired(false)
 {
+}
+ParamFilter::ParamFilter(bool isRequired, const std::string &name, const std::string &regex)
+:name_(name), regex_(regex), m_isRequired(isRequired)
+{
+    
 }
 
 ParamFilter::~ParamFilter()
@@ -190,7 +196,7 @@ ParamFilter::check(const fastcgi::Request *request)
 {
     if (!request->hasArg(name_))
     {
-	return false;
+	return !m_isRequired;
     }
     return regex_.check(request->getArg(name_));
 }

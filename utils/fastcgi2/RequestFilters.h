@@ -119,6 +119,7 @@ private:
 class ParamFilter : public RequestFilter {
 public:
     ParamFilter(const std::string &name, const std::string &regex);
+    ParamFilter(bool isRequired, const std::string &name, const std::string &regex);
     ~ParamFilter();
 
     void fillVars(fastcgi::HandlerContext* context) {
@@ -127,6 +128,7 @@ public:
     virtual bool check(const fastcgi::Request *request);
 private:
     std::string name_;
+    bool m_isRequired;
     RegexFilter regex_;
 };
 

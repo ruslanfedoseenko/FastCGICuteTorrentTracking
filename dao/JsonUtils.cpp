@@ -63,19 +63,29 @@ std::string JsonUtils::GetValue<std::string>(const rapidjson::Value& value, cons
 	return "";
     }
 }
-
+static const char* kTypeNames[] = 
+    { "Null", "False", "True", "Object", "Array", "String", "Number" };
 template <>
 double JsonUtils::GetValue<double>(const rapidjson::Value& value, const char* path)
 {
     const rapidjson::Value& subValue = value[path];
+    std::cout << "ItemType" << kTypeNames[subValue.GetType()] << std::endl;
     if (subValue.IsDouble())
+    {
+	std::cout << "Subvalue is double" << std::endl;
 	return subValue.GetDouble();
+    }
     else
     {
+	std::cout << "Subvalue is not double" << std::endl;
 	if (subValue.IsString())
+	{
+	    std::cout << "Subvalue is string" << std::endl;
 	    return boost::lexical_cast<double>(subValue.GetString());
+	}
 	else
 	{
+	    std::cout << "Subvalue is not a string" << std::endl;
 	    return -1.0;
 	}
     }

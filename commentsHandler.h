@@ -45,5 +45,6 @@ public:
     void handleGetCommentsRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleAddCommentRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void handleEditCommentsRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
+    void handleDeleteCommentRequest(fastcgi::Request *request, fastcgi::HandlerContext *handlerContext);
     void QueueProcessingThread();
 };

@@ -33,11 +33,15 @@ CommentsHandler::CommentsHandler(fastcgi::ComponentContext *context)
     addCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comments/(?<infohash>[a-fA-F0-9]{40})/")));
     addCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
     HandlerDescriptor* getCommentsHandler = m_pRouter->RegisterHandler(boost::bind(&CommentsHandler::handleGetCommentsRequest, this, _1, _2));
-    getCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comments/(?<infohash>[a-fA-F0-9]{40})/(page/(?<page>\\d+))?")));
+    getCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comments/(?<infohash>[a-fA-F0-9]{40})/(page/(?<page>\\d+))?(\\?userToken=(?<user_id>[a-fA-F0-9]{64}))?")));
     getCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("get")));
+    getCommentsHandler->Filters.push_back(boost::shared_ptr<ParamFilter>(new ParamFilter(false, "userToken", "(?<user_id>[a-fA-F0-9]{64})")));
     HandlerDescriptor* editCommentsHandler = m_pRouter->RegisterHandler(boost::bind(&CommentsHandler::handleEditCommentsRequest, this, _1, _2));
     editCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comment/edit/(?<comment_id>\\d+)")));
     editCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
+    HandlerDescriptor* deleteCommentsHandler = m_pRouter->RegisterHandler(boost::bind(&CommentsHandler::handleDeleteCommentRequest, this, _1, _2));
+    deleteCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/v1/comment/delete/(?<comment_id>\\d+)")));
+    deleteCommentsHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
     std::cout << "CommentsHandler::ctor" << std::endl;
 
 
@@ -65,6 +69,7 @@ void CommentsHandler::handleGetCommentsRequest(fastcgi::Request *request, fastcg
 {
     try {
     boost::any infohashValue = handlerContext->getParam("infohash");
+    boost::any userTokenValue = handlerContext->getParam("user_id");
     if (!infohashValue.empty())
     {
 	std::string infoHash = boost::any_cast<std::string>(infohashValue);
@@ -94,8 +99,23 @@ void CommentsHandler::handleGetCommentsRequest(fastcgi::Request *request, fastcg
 	std::string scriptFileName = request->getScriptFilename();
 	std::string remoteAdr = request->getRemoteAddr();
 
-
-	std::vector<Comment> comments = m_pCommentsRepository->GetComments(infoHash, page);
+	std::vector<Comment> comments;
+	std::string userToken;
+	if (!userTokenValue.empty())
+	{
+	    userToken  = boost::any_cast<std::string>(userTokenValue);
+	    std::cout << "User Token " << userToken << std::endl;
+	    
+	}
+	
+	if (userToken.empty())
+	{
+	     comments = m_pCommentsRepository->GetComments(infoHash, page);
+	}
+	else
+	{
+	    comments = m_pCommentsRepository->GetComments(infoHash, userToken, page);
+	}
 
 
 	float avgRating = m_pCommentsRepository->GetCommentsAvarageRating(infoHash);
@@ -199,6 +219,7 @@ void CommentsHandler::buildJson(rapidjson::Document* pt, std::vector<Comment>& c
 	    comment.AddMember("user_id", rapidjson::Value(commentObj.userToken.c_str(), allocator), allocator);
 	    comment.AddMember("comment_date", rapidjson::Value(commentObj.comentAddDateTime.c_str(), allocator), allocator);
 	    comment.AddMember("rating", commentObj.rating, allocator);
+	    comment.AddMember("can_edit", commentObj.canEdit, allocator);
 	    comments.PushBack(comment, allocator);
 
 
@@ -241,9 +262,52 @@ void CommentsHandler::QueueProcessingThread()
 
 }
 
+void CommentsHandler::handleDeleteCommentRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
+{
+    boost::any idValue = handlerContext->getParam("comment_id");
+    if (!idValue.empty())
+    {
+	std::string idString = boost::any_cast<std::string>(idValue);
+	int comment_id = boost::lexical_cast<int>(idString);
+	fastcgi::DataBuffer buffer = request->requestBody();
+
+	rapidjson::Document doc;
+
+	if (!JsonUtils::ParseJson(doc, buffer))
+	{
+	    FcgiHelper::WriteParseError(request, doc.GetParseError());
+	    return;
+	}
+
+
+	if (doc.IsObject() && doc.HasMember("user_token"))
+	{
+	    rapidjson::Value::ConstMemberIterator commentJsonObjectIter = doc.FindMember("comment");
+	    std::string userToken = JsonUtils::GetValue<std::string>(doc, "user_token");
+	    std::cout << "Delete comment ID: " << comment_id << " UserToekn: " << userToken << std::endl;
+	    if (m_pCommentsRepository->CheckCommentToken(userToken, comment_id))
+	    {
+		m_pCommentsRepository->DeleteComment(comment_id);
+	    }
+	    else
+	    {
+		FcgiHelper::WriteError(request, TokenExpired, "Token expired, authentification requred");
+	    }
+	    
+	}
+	else
+	{
+	    std::cout << "Required comment json object is missing." << std::endl;
+	    request->setStatus(400);
+	    return;
+	}
+    }
+}
+
+
 void CommentsHandler::handleEditCommentsRequest(fastcgi::Request* request, fastcgi::HandlerContext* handlerContext)
 {
-     boost::any idValue = handlerContext->getParam("comment_id");
+    boost::any idValue = handlerContext->getParam("comment_id");
     if (!idValue.empty())
     {
 	std::string idString = boost::any_cast<std::string>(idValue);

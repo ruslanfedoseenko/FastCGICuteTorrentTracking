@@ -30,6 +30,7 @@ public:
     bool IsMailUnique(const std::string& mail, boost::shared_ptr<RepositoryContext> context = nullptr);
     int GetUserIdByActiveToken(const std::string& authToken, boost::shared_ptr<RepositoryContext> context = nullptr);
 private:
+    int m_sessionExpartionTime;
     std::string GenerateAuthToken();
     int AddAuthToken(std::string token, boost::shared_ptr<RepositoryContext> context = nullptr);
     void DeactivateToken(int id, boost::shared_ptr<RepositoryContext> context = nullptr);

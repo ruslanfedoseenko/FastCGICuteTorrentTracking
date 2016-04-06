@@ -29,6 +29,7 @@
 #include <cppconn/datatype.h>
 #include <fastcgi2/component.h>
 #include <fastcgi2/config.h>
+
 CommentsRepository::CommentsRepository(fastcgi::ComponentContext* componentContext)
 : BaseRepository()
 , fastcgi::Component(componentContext)
@@ -46,13 +47,95 @@ CommentsRepository::CommentsRepository(fastcgi::ComponentContext* componentConte
 
 void CommentsRepository::onLoad()
 {
-    
+
 }
 
 void CommentsRepository::onUnload()
 {
-    
+
 }
+
+Comment CommentsRepository::GetComment(int id, boost::shared_ptr<RepositoryContext> context)
+{
+    Comment comment;
+    if (context == nullptr)
+    {
+	context = createContext();
+    }
+
+    boost::shared_ptr<sql::Connection> connection = context->GetConnection();
+    boost::scoped_ptr<sql::PreparedStatement> getCommentStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, u.`username`, tc1.`added_date`, tc1.`updated_date`, tc1.`rating` FROM `torrent_coments` as tc1 LEFT JOIN `users` u ON u.id = tc1.`user_id` WHERE tc1.`id`=? "));
+    getCommentStatment->setInt(1, id);
+    boost::scoped_ptr<sql::ResultSet> commentsResultSet(getCommentStatment->executeQuery());
+    while (commentsResultSet->next())
+    {
+	comment.id = commentsResultSet->getInt("id");
+	comment.infohash = commentsResultSet->getString("infohash");
+	comment.comment = commentsResultSet->getString("comment_data");
+	comment.userToken = commentsResultSet->getString("username");
+	comment.comentUpdateDateTime = commentsResultSet->getString("updated_date");
+	comment.comentAddDateTime = commentsResultSet->getString("added_date");
+	comment.rating = commentsResultSet->getDouble("rating");
+    }
+    return comment;
+}
+
+std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, std::string userToekn, int page, boost::shared_ptr<RepositoryContext> context)
+{
+    boost::mutex::scoped_lock lock(m_readMutex);
+    std::cout << "CommentsRepository::GetComments " << infoHash << " " << page << std::endl;
+    std::vector<Comment> comments;
+
+    std::string cacheKey = infoHash;
+    cacheKey.append(std::to_string(page));
+    cacheKey.append(userToekn);
+    uint32_t crcCacheKey = HashUtils::CalculateCrc32(cacheKey);
+    std::cout << "looking cache entry with cacheKey " << cacheKey << std::endl;
+    if (m_commentsCache.count(crcCacheKey) > 0 && m_commentsCache.check(crcCacheKey))
+    {
+	std::cout << "entry with cacheKey " << cacheKey << " found" << std::endl;
+	comments = m_commentsCache.fetch(crcCacheKey);
+    }
+    else
+    {
+	std::cout << "entry with cacheKey " << cacheKey << " not found" << std::endl;
+	if (context == nullptr)
+	{
+	    context = createContext();
+	}
+	boost::shared_ptr<sql::Connection> connection = context->GetConnection();
+	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, u.`username`, tc1.`added_date`, tc1.`updated_date`, tc1.`rating`, (at.token = ?) AS can_edit FROM `torrent_coments` as tc1 LEFT JOIN `users` u ON u.id = tc1.`user_id` LEFT JOIN `auth_tokens` at ON u.token_id = at.id WHERE `infohash`=? ORDER BY tc1.`added_date` DESC  LIMIT ?, ?"));
+	getCommentsStatment->setString(1, userToekn);
+	getCommentsStatment->setString(2, infoHash);
+	getCommentsStatment->setInt(3, page * PAGE_SIZE);
+	getCommentsStatment->setInt(4, PAGE_SIZE);
+	boost::scoped_ptr<sql::ResultSet> commentsResultSet(getCommentsStatment->executeQuery());
+	while (commentsResultSet->next())
+	{
+	    Comment comment;
+	    comment.id = commentsResultSet->getInt("id");
+	    comment.infohash = commentsResultSet->getString("infohash");
+	    comment.comment = commentsResultSet->getString("comment_data");
+	    comment.userToken = commentsResultSet->getString("username");
+	    comment.comentUpdateDateTime = commentsResultSet->getString("updated_date");
+	    comment.comentAddDateTime = commentsResultSet->getString("added_date");
+	    comment.rating = commentsResultSet->getDouble("rating");
+	    comment.canEdit = commentsResultSet->getInt("can_edit") > 0;
+	    comments.push_back(comment);
+	}
+	if (comments.size() > 0)
+	{
+	    std::cout << "inserting cache entry with cacheKey " << cacheKey << std::endl;
+	    m_commentsCache.insert(crcCacheKey, comments);
+	    m_usedCacheKeys[cacheKey] = crcCacheKey;
+	}
+    }
+
+
+
+    return comments;
+}
+
 std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context)
 {
 
@@ -77,7 +160,7 @@ std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int p
 	    context = createContext();
 	}
 	boost::shared_ptr<sql::Connection> connection = context->GetConnection();
-	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, u.`username`, tc1.`added_date`, tc1.`updated_date`, tc1.`rating` FROM `torrent_coments` as tc1 LEFT JOIN `users` u ON u.id = tc1.`user_id` WHERE `infohash`=? ORDER BY tc1.`added_date` LIMIT ?, ?"));
+	boost::scoped_ptr<sql::PreparedStatement> getCommentsStatment(connection->prepareStatement("SELECT tc1.`id`, tc1.`infohash`, tc1.`comment_data`, u.`username`, tc1.`added_date`, tc1.`updated_date`, tc1.`rating` FROM `torrent_coments` as tc1 LEFT JOIN `users` u ON u.id = tc1.`user_id` WHERE `infohash`=? ORDER BY tc1.`added_date` DESC LIMIT ?, ?"));
 	getCommentsStatment->setString(1, infoHash);
 	getCommentsStatment->setInt(2, page * PAGE_SIZE);
 	getCommentsStatment->setInt(3, PAGE_SIZE);
@@ -98,6 +181,7 @@ std::vector<Comment> CommentsRepository::GetComments(std::string infoHash, int p
 	{
 	    std::cout << "inserting cache entry with cacheKey " << cacheKey << std::endl;
 	    m_commentsCache.insert(crcCacheKey, comments);
+	    m_usedCacheKeys[cacheKey] = crcCacheKey;
 	}
     }
 
@@ -190,7 +274,7 @@ void CommentsRepository::AddComments(const std::vector<Comment>& comments, boost
 	insertStatementSql.append(" ON DUPLICATE KEY UPDATE `comment_data` = VALUES(`comment_data`), updated_date = CURRENT_TIMESTAMP, `updated_date`=VALUES(`updated_date`), `rating`= VALUES(`rating`) ");
 	boost::scoped_ptr<sql::PreparedStatement> statment(connection->prepareStatement(insertStatementSql));
 	int index = 1;
-	
+
 	for (std::vector<Comment>::const_iterator i = comments.begin(); i != comments.end(); ++i)
 	{
 	    Comment comment = *i;
@@ -228,15 +312,48 @@ void CommentsRepository::AddComments(const std::vector<Comment>& comments, boost
     for (std::set<std::string>::iterator i = cachesToInvalidate.begin(); i != cachesToInvalidate.end(); ++i)
     {
 	std::string infoHash = *i;
-	int pages = GetCommentsPageCount(infoHash, context);
-	for (int j = 0; j < pages; j++)
+
+	for (std::map<std::string, uint32_t>::iterator j = m_usedCacheKeys.begin(); j != m_usedCacheKeys.end(); ++j)
 	{
-	    std::string cacheKey = infoHash + std::to_string(j);
-	    uint32_t crcCacheKey = HashUtils::CalculateCrc32(cacheKey);
-	    if (m_commentsCache.check(crcCacheKey))
+	    std::string cacheKey = j->first;
+	    uint32_t crcCacheKey = j->second;
+
+	    if (cacheKey.substr(0, infoHash.length()) == infoHash)
+	    {
 		m_commentsCache.erase(crcCacheKey);
+		m_usedCacheKeys.erase(cacheKey);
+	    }
 	}
 
+    }
+
+}
+
+bool CommentsRepository::DeleteComment(int comment_id, boost::shared_ptr<RepositoryContext> context)
+{
+    boost::mutex::scoped_lock lock(m_readMutex);
+    if (context == nullptr)
+    {
+	context = createContext();
+    }
+    Comment comment = GetComment(comment_id, context);
+    std::string infohash = comment.infohash;
+    boost::shared_ptr<sql::Connection> connection = context->GetConnection();
+    boost::scoped_ptr<sql::PreparedStatement> avgRatingStatement(connection->prepareStatement("DELETE FROM  `torrent_coments` WHERE  `id` = ?"));
+    avgRatingStatement->setInt(1, comment_id);
+    avgRatingStatement->execute();
+    
+    
+    for (std::map<std::string, uint32_t>::iterator j = m_usedCacheKeys.begin(); j != m_usedCacheKeys.end(); ++j)
+    {
+	std::string cacheKey = j->first;
+	uint32_t crcCacheKey = j->second;
+
+	if (cacheKey.substr(0, infohash.length()) == infohash)
+	{
+	    m_commentsCache.erase(crcCacheKey);
+	    m_usedCacheKeys.erase(cacheKey);
+	}
     }
 
 }

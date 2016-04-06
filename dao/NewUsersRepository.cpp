@@ -23,18 +23,22 @@
 #include <fastcgi2/logger.h>
 #include <fastcgi2/config.h>
 #include <stdexcept>
+#include <boost/lexical_cast.hpp>
 #include <chrono>
-#define SESSION_EXPIRE_IN 2400
 
 NewUsersRepository::NewUsersRepository(fastcgi::ComponentContext* componentContext)
 : BaseRepository()
 , fastcgi::Component(componentContext)
+, m_sessionExpartionTime(0)
 {
     std::string rootXPath = context()->getComponentXPath();
     setDbHost(context()->getConfig()->asString(rootXPath + "/mysqlhost"));
     setDbName(context()->getConfig()->asString(rootXPath + "/mysqldbname"));
     setDbUser(context()->getConfig()->asString(rootXPath + "/mysqluser"));
     setDbPassword(context()->getConfig()->asString(rootXPath + "/mysqlpass"));
+    std::string exparationTime = context()->getConfig()->asString(rootXPath + "/sessionexparationtime");
+    std::cout << "Session expiration time:" << exparationTime << std::endl;
+    m_sessionExpartionTime = boost::lexical_cast<int>(exparationTime);
 }
 
 std::string NewUsersRepository::AddUser(const User& user, boost::shared_ptr<RepositoryContext> context)
@@ -90,7 +94,7 @@ User NewUsersRepository::GetUser(const unsigned& userId, boost::shared_ptr<Repos
     result.id = userId;
     boost::shared_ptr<sql::Connection> connection = context->GetConnection();
     boost::scoped_ptr<sql::PreparedStatement> getUserStatment(connection->prepareStatement("SELECT u.`userName` , u.`mail` , u.`password` , at.token FROM  `users` AS u LEFT JOIN auth_tokens AS at ON u.token_id = at.id AND at.is_enabled =  TRUE WHERE u.`id` =  ? AND TIMESTAMPDIFF( SECOND , at.`last_used` , CURRENT_TIMESTAMP ) < ? "));
-    getUserStatment->setInt(1, SESSION_EXPIRE_IN);
+    getUserStatment->setInt(1, m_sessionExpartionTime);
     getUserStatment->setInt(2, userId);
     boost::scoped_ptr<sql::ResultSet> userResult(getUserStatment->executeQuery());
     while (userResult->next())
@@ -154,7 +158,7 @@ bool NewUsersRepository::CheckAlive(const std::string authToken, boost::shared_p
     boost::scoped_ptr<sql::PreparedStatement> findTokenStatement(connection->prepareStatement("SELECT COUNT(*), at.`id` FROM auth_tokens as at WHERE at.`token` = ? AND at.`is_enabled` = TRUE AND TIMESTAMPDIFF( SECOND , at.`last_used` , CURRENT_TIMESTAMP ) < ?"));
     int index = 1;
     findTokenStatement->setString(index++, authToken);
-    findTokenStatement->setInt(index++, SESSION_EXPIRE_IN);
+    findTokenStatement->setInt(index++, m_sessionExpartionTime);
     boost::scoped_ptr<sql::ResultSet> findTokenResult(findTokenStatement->executeQuery());
     while (findTokenResult->next())
     {

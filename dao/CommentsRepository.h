@@ -35,15 +35,19 @@ public:
     void onLoad();
     void onUnload();
     CommentsRepository(fastcgi::ComponentContext* componentContext);
+    Comment GetComment(int id, boost::shared_ptr<RepositoryContext> context = nullptr);
+    std::vector<Comment> GetComments(std::string infoHash, std::string userToekn, int page, boost::shared_ptr<RepositoryContext> context = nullptr);
     std::vector<Comment> GetComments(std::string infoHash, int page, boost::shared_ptr<RepositoryContext> context = nullptr);
     int GetCommentsPageCount(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);
     float GetCommentsAvarageRating(std::string infoHash, boost::shared_ptr<RepositoryContext> context = nullptr);
     void AddComments(const std::vector<Comment>& comments, boost::shared_ptr<RepositoryContext> context = nullptr);
     bool CheckCommentToken(std::string token, int comment_id, boost::shared_ptr<RepositoryContext> context = nullptr);
+    bool DeleteComment(int comment_id, boost::shared_ptr<RepositoryContext> context = nullptr);
     virtual ~CommentsRepository();
 private:
     boost::scoped_ptr<NewUsersRepository> m_pAuthRepo;
     CacheAdaptive m_commentsCache;
+    std::map<std::string, uint32_t> m_usedCacheKeys;
     boost::mutex m_readMutex;
 
 };

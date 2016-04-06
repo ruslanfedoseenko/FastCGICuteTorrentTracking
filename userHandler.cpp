@@ -50,13 +50,13 @@ UserHandler::UserHandler(fastcgi::ComponentContext *context)
     getOnlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/")));
     getOnlineHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("get")));
     HandlerDescriptor* getUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::GetUserName, this, _1, _2));
-    getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{32})/")));
+    getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{64})/")));
     getUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("get")));
     HandlerDescriptor* updateUserSessionHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserSession, this, _1, _2));
-    updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/(?<user_id>[a-fA-F0-9]{32})/")));
+    updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/online/(?<user_id>[a-fA-F0-9]{64})/")));
     updateUserSessionHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
     HandlerDescriptor* updateUserNameHandler = m_router->RegisterHandler(boost::bind(&UserHandler::UpdateUserName, this, _1, _2));
-    updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{32})/")));
+    updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new UrlFilter("/user/(?<user_id>[a-fA-F0-9]{64})/")));
     updateUserNameHandler->Filters.push_back(boost::shared_ptr<RequestFilter>(new RequestTypeFilter("post")));
     std::cout << "UserHandler::ctor" << std::endl;
 }
